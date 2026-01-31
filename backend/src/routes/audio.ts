@@ -1,8 +1,9 @@
 import express from 'express';
+import { supabase } from '../lib/supabase';
 
 const router = express.Router();
 
-// Generate audio for a chapter using Speechify API
+// Generate audio for a chapter using OpenAI TTS
 router.post('/generate-chapter-audio', async (req, res) => {
   try {
     const { verses, bookName, chapter, version } = req.body;
@@ -28,98 +29,106 @@ router.post('/generate-chapter-audio', async (req, res) => {
       return res.status(400).json({ error: 'Verses array is empty' });
     }
 
-    // Combine all verse text with verse numbers for better listening experience
+    // Check cache first
+    const cacheKey = `${bookName}_${chapter}_${version}`.toLowerCase();
+    const { data: cachedAudio } = await supabase
+      .from('chapter_audio')
+      .select('audio_url, duration')
+      .eq('book_name', bookName)
+      .eq('chapter', chapter)
+      .eq('version', version)
+      .single();
+
+    if (cachedAudio) {
+      console.log('✅ Using cached audio');
+      return res.json({
+        audioUrl: cachedAudio.audio_url,
+        duration: cachedAudio.duration,
+        verseCount: verses.length,
+        cached: true,
+      });
+    }
+
+    // Combine all verse text
     const chapterText = verses
       .map((v: any) => {
         const verseNumber = v.verse || v.number || v.verseNumber;
         const verseText = v.text || '';
         return `Verse ${verseNumber}. ${verseText}`;
       })
-      .join('. ');
+      .join(' ');
 
     console.log(`🎙️ Generating audio for ${bookName} ${chapter} (${version})`);
     console.log(`📝 Text length: ${chapterText.length} characters`);
 
-    // Speechify has a 2000 character limit, so we need to truncate or simplify
-    const MAX_CHARS = 1900; // Leave buffer for safety
-    let finalText = chapterText;
-
-    if (chapterText.length > MAX_CHARS) {
-      console.log(`⚠️ Text too long (${chapterText.length} chars), removing verse labels to fit`);
-      // Remove "Verse X." labels to save characters
-      finalText = verses
-        .map((v: any) => v.text || '')
-        .join('. ')
-        .substring(0, MAX_CHARS);
-      console.log(`✂️ Truncated to ${finalText.length} characters`);
-    }
-
-    // Call Speechify API (updated format based on their API docs)
-    const speechifyUrl = 'https://api.sws.speechify.com/v1/audio/speech';
-    
-    const requestBody = {
-      input: finalText,
-      voice_id: 'oliver',
-      model: 'simba-english',
-      audio_format: 'mp3',
-    };
-
-    console.log('📡 Calling Speechify API:', speechifyUrl);
-    console.log('🔑 Using API key:', process.env.SPEECHIFY_API_KEY ? 'Set' : 'Missing');
-    console.log('📦 Request body:', JSON.stringify(requestBody, null, 2));
-
-    const response = await fetch(speechifyUrl, {
+    // Call OpenAI TTS API
+    const response = await fetch('https://api.openai.com/v1/audio/speech', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.SPEECHIFY_API_KEY}`,
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify({
+        model: 'tts-1', // Fast, good quality
+        voice: 'onyx', // Deep male voice (similar to Oliver)
+        input: chapterText,
+        speed: 0.9, // Slightly slower for clarity
+      }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Speechify API error:', errorText);
-      console.error('📊 Status:', response.status);
-      console.error('📋 Headers:', Object.fromEntries(response.headers.entries()));
+      console.error('❌ OpenAI TTS error:', errorText);
       return res.status(response.status).json({ 
         error: 'Failed to generate audio',
         details: errorText,
-        status: response.status
       });
     }
 
-    const audioData = await response.json() as {
-      audio_url?: string;
-      url?: string;
-      audio_data?: string;
-      audioUrl?: string;
-      duration?: number;
-    };
+    // Get audio buffer
+    const audioBuffer = await response.arrayBuffer();
+    const audioBlob = Buffer.from(audioBuffer);
 
-    console.log('✅ Speechify response received');
-    console.log('📦 Full response:', JSON.stringify(audioData, null, 2));
+    console.log(`✅ Audio generated: ${audioBlob.length} bytes`);
 
-    // Try different possible field names for the audio URL
-    const audioUrl = audioData.audio_url || audioData.url || audioData.audioUrl || audioData.audio_data;
-
-    if (!audioUrl) {
-      console.error('❌ No audio URL in response');
-      console.error('📦 Response keys:', Object.keys(audioData));
-      return res.status(500).json({ 
-        error: 'No audio URL in Speechify response',
-        responseKeys: Object.keys(audioData)
+    // Upload to Supabase Storage
+    const fileName = `${cacheKey}_${Date.now()}.mp3`;
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('chapter-audio')
+      .upload(fileName, audioBlob, {
+        contentType: 'audio/mpeg',
+        cacheControl: '31536000', // Cache for 1 year
       });
+
+    if (uploadError) {
+      console.error('❌ Upload error:', uploadError);
+      return res.status(500).json({ error: 'Failed to upload audio' });
     }
 
-    console.log(`✅ Audio generated successfully`);
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('chapter-audio')
+      .getPublicUrl(fileName);
+
+    const audioUrl = urlData.publicUrl;
     console.log(`🔗 Audio URL: ${audioUrl}`);
+
+    // Cache for future requests
+    await supabase.from('chapter_audio').upsert({
+      book_name: bookName,
+      chapter: chapter,
+      version: version,
+      audio_url: audioUrl,
+      duration: Math.round(audioBlob.length / 4000), // Rough estimate: 4KB per second
+      generated_at: new Date().toISOString(),
+    });
 
     // Return audio URL and metadata
     res.json({
       audioUrl: audioUrl,
-      duration: audioData.duration,
+      duration: Math.round(audioBlob.length / 4000),
       verseCount: verses.length,
+      cached: false,
     });
 
   } catch (error: any) {
