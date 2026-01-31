@@ -45,7 +45,7 @@ router.post('/generate-chapter-audio', async (req, res) => {
     
     const requestBody = {
       input: chapterText,
-      voice_id: 'henry',
+      voice_id: 'oliver',
       model: 'simba-english',
       audio_format: 'mp3',
     };
