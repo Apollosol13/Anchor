@@ -30,7 +30,11 @@ router.post('/generate-chapter-audio', async (req, res) => {
 
     // Combine all verse text with verse numbers for better listening experience
     const chapterText = verses
-      .map((v: any) => `Verse ${v.verse}. ${v.text}`)
+      .map((v: any) => {
+        const verseNumber = v.verse || v.number || v.verseNumber;
+        const verseText = v.text || '';
+        return `Verse ${verseNumber}. ${verseText}`;
+      })
       .join('. ');
 
     console.log(`🎙️ Generating audio for ${bookName} ${chapter} (${version})`);
