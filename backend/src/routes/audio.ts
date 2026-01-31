@@ -40,11 +40,25 @@ router.post('/generate-chapter-audio', async (req, res) => {
     console.log(`🎙️ Generating audio for ${bookName} ${chapter} (${version})`);
     console.log(`📝 Text length: ${chapterText.length} characters`);
 
+    // Speechify has a 2000 character limit, so we need to truncate or simplify
+    const MAX_CHARS = 1900; // Leave buffer for safety
+    let finalText = chapterText;
+
+    if (chapterText.length > MAX_CHARS) {
+      console.log(`⚠️ Text too long (${chapterText.length} chars), removing verse labels to fit`);
+      // Remove "Verse X." labels to save characters
+      finalText = verses
+        .map((v: any) => v.text || '')
+        .join('. ')
+        .substring(0, MAX_CHARS);
+      console.log(`✂️ Truncated to ${finalText.length} characters`);
+    }
+
     // Call Speechify API (updated format based on their API docs)
     const speechifyUrl = 'https://api.sws.speechify.com/v1/audio/speech';
     
     const requestBody = {
-      input: chapterText,
+      input: finalText,
       voice_id: 'oliver',
       model: 'simba-english',
       audio_format: 'mp3',
