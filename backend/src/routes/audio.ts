@@ -19,19 +19,26 @@ router.post('/generate-chapter-audio', async (req, res) => {
     console.log(`🎙️ Generating audio for ${bookName} ${chapter} (${version})`);
     console.log(`📝 Text length: ${chapterText.length} characters`);
 
-    // Call Speechify API
-    const response = await fetch('https://api.sws.speechify.com/v1/audio/speech', {
+    // Call Speechify API (correct endpoint based on Speechify docs)
+    const speechifyUrl = 'https://api.sws.speechify.com/v1/audio/speech';
+    
+    const requestBody = {
+      audio_format: 'mp3',
+      input: chapterText,
+      voice_id: 'henry',
+      model: 'simba-english',
+    };
+
+    console.log('📡 Calling Speechify API:', speechifyUrl);
+    console.log('🔑 Using API key:', process.env.SPEECHIFY_API_KEY ? 'Set' : 'Missing');
+
+    const response = await fetch(speechifyUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${process.env.SPEECHIFY_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        input: chapterText,
-        voice_id: 'henry', // Natural male voice (you can change this)
-        audio_format: 'mp3',
-        model: 'simba-turbo', // Fast, high-quality model
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
