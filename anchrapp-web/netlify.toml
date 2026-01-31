@@ -1,0 +1,22 @@
+[build]
+  publish = "public"
+
+# Ensure the well-known files are served with correct content type
+[[headers]]
+  for = "/.well-known/apple-app-site-association"
+  [headers.values]
+    Content-Type = "application/json"
+    Access-Control-Allow-Origin = "*"
+
+[[headers]]
+  for = "/.well-known/assetlinks.json"
+  [headers.values]
+    Content-Type = "application/json"
+    Access-Control-Allow-Origin = "*"
+
+# Enable SPA-like routing (optional, for future features)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false

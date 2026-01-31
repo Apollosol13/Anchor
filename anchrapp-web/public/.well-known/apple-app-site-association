@@ -1,0 +1,14 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "6YZSFD7L5N.io.anchrapp.anchor",
+        "paths": [
+          "/auth/*",
+          "/share/*"
+        ]
+      }
+    ]
+  }
+}
