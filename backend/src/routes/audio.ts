@@ -40,18 +40,19 @@ router.post('/generate-chapter-audio', async (req, res) => {
     console.log(`🎙️ Generating audio for ${bookName} ${chapter} (${version})`);
     console.log(`📝 Text length: ${chapterText.length} characters`);
 
-    // Call Speechify API (correct endpoint based on Speechify docs)
+    // Call Speechify API (updated format based on their API docs)
     const speechifyUrl = 'https://api.sws.speechify.com/v1/audio/speech';
     
     const requestBody = {
-      audio_format: 'mp3',
       input: chapterText,
       voice_id: 'henry',
       model: 'simba-english',
+      audio_format: 'mp3',
     };
 
     console.log('📡 Calling Speechify API:', speechifyUrl);
     console.log('🔑 Using API key:', process.env.SPEECHIFY_API_KEY ? 'Set' : 'Missing');
+    console.log('📦 Request body:', JSON.stringify(requestBody, null, 2));
 
     const response = await fetch(speechifyUrl, {
       method: 'POST',
@@ -64,10 +65,13 @@ router.post('/generate-chapter-audio', async (req, res) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Speechify API error:', errorText);
+      console.error('❌ Speechify API error:', errorText);
+      console.error('📊 Status:', response.status);
+      console.error('📋 Headers:', Object.fromEntries(response.headers.entries()));
       return res.status(response.status).json({ 
         error: 'Failed to generate audio',
-        details: errorText 
+        details: errorText,
+        status: response.status
       });
     }
 
