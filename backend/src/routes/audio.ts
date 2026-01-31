@@ -49,14 +49,14 @@ router.post('/generate-chapter-audio', async (req, res) => {
       });
     }
 
-    // Combine all verse text
-    const chapterText = verses
-      .map((v: any) => {
-        const verseNumber = v.verse || v.number || v.verseNumber;
-        const verseText = v.text || '';
-        return `Verse ${verseNumber}. ${verseText}`;
-      })
+    // Combine all verse text without verse numbers for natural reading
+    // Add intro with book name and chapter
+    const introText = `${bookName}, chapter ${chapter}.`;
+    const versesText = verses
+      .map((v: any) => v.text || '')
       .join(' ');
+
+    const chapterText = `${introText} ${versesText}`;
 
     console.log(`🎙️ Generating audio for ${bookName} ${chapter} (${version})`);
     console.log(`📝 Text length: ${chapterText.length} characters`);
@@ -69,10 +69,10 @@ router.post('/generate-chapter-audio', async (req, res) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'tts-1', // Fast, good quality
-        voice: 'onyx', // Deep male voice (similar to Oliver)
+        model: 'tts-1-hd', // HD quality for cleaner, more natural audio
+        voice: 'onyx', // Deep male voice
         input: chapterText,
-        speed: 0.9, // Slightly slower for clarity
+        speed: 0.95, // Slightly slower for better clarity
       }),
     });
 
@@ -89,7 +89,11 @@ router.post('/generate-chapter-audio', async (req, res) => {
     const audioBuffer = await response.arrayBuffer();
     const audioBlob = Buffer.from(audioBuffer);
 
-    console.log(`✅ Audio generated: ${audioBlob.length} bytes`);
+    // Calculate approximate duration (OpenAI TTS is about 24kbps MP3)
+    // At 24kbps: 24000 bits/sec = 3000 bytes/sec
+    const approximateDuration = Math.round(audioBlob.length / 3000);
+
+    console.log(`✅ Audio generated: ${audioBlob.length} bytes (~${approximateDuration}s)`);
 
     // Upload to Supabase Storage
     const fileName = `${cacheKey}_${Date.now()}.mp3`;
@@ -119,14 +123,14 @@ router.post('/generate-chapter-audio', async (req, res) => {
       chapter: chapter,
       version: version,
       audio_url: audioUrl,
-      duration: Math.round(audioBlob.length / 4000), // Rough estimate: 4KB per second
+      duration: approximateDuration,
       generated_at: new Date().toISOString(),
     });
 
     // Return audio URL and metadata
     res.json({
       audioUrl: audioUrl,
-      duration: Math.round(audioBlob.length / 4000),
+      duration: approximateDuration,
       verseCount: verses.length,
       cached: false,
     });
