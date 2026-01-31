@@ -92,14 +92,32 @@ router.post('/generate-chapter-audio', async (req, res) => {
     const audioData = await response.json() as {
       audio_url?: string;
       url?: string;
+      audio_data?: string;
+      audioUrl?: string;
       duration?: number;
     };
 
+    console.log('✅ Speechify response received');
+    console.log('📦 Full response:', JSON.stringify(audioData, null, 2));
+
+    // Try different possible field names for the audio URL
+    const audioUrl = audioData.audio_url || audioData.url || audioData.audioUrl || audioData.audio_data;
+
+    if (!audioUrl) {
+      console.error('❌ No audio URL in response');
+      console.error('📦 Response keys:', Object.keys(audioData));
+      return res.status(500).json({ 
+        error: 'No audio URL in Speechify response',
+        responseKeys: Object.keys(audioData)
+      });
+    }
+
     console.log(`✅ Audio generated successfully`);
+    console.log(`🔗 Audio URL: ${audioUrl}`);
 
     // Return audio URL and metadata
     res.json({
-      audioUrl: audioData.audio_url || audioData.url,
+      audioUrl: audioUrl,
       duration: audioData.duration,
       verseCount: verses.length,
     });
