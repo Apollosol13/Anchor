@@ -50,7 +50,11 @@ router.post('/generate-chapter-audio', async (req, res) => {
       });
     }
 
-    const audioData = await response.json();
+    const audioData = await response.json() as {
+      audio_url?: string;
+      url?: string;
+      duration?: number;
+    };
 
     console.log(`✅ Audio generated successfully`);
 
