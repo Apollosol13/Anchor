@@ -29,17 +29,19 @@ router.post('/generate-chapter-audio', async (req, res) => {
       return res.status(400).json({ error: 'Verses array is empty' });
     }
 
-    // Check cache first
+    // Check cache first (with audio format version)
+    const AUDIO_FORMAT_VERSION = 'v2_no_verse_numbers'; // Increment when audio format changes
     const cacheKey = `${bookName}_${chapter}_${version}`.toLowerCase();
     const { data: cachedAudio } = await supabase
       .from('chapter_audio')
-      .select('audio_url, duration')
+      .select('audio_url, duration, format_version')
       .eq('book_name', bookName)
       .eq('chapter', chapter)
       .eq('version', version)
       .single();
 
-    if (cachedAudio) {
+    // Only use cache if format version matches
+    if (cachedAudio && cachedAudio.format_version === AUDIO_FORMAT_VERSION) {
       console.log('✅ Using cached audio');
       return res.json({
         audioUrl: cachedAudio.audio_url,
@@ -47,6 +49,10 @@ router.post('/generate-chapter-audio', async (req, res) => {
         verseCount: verses.length,
         cached: true,
       });
+    }
+
+    if (cachedAudio && cachedAudio.format_version !== AUDIO_FORMAT_VERSION) {
+      console.log('🔄 Cache outdated, regenerating with new format');
     }
 
     // Combine all verse text without verse numbers for natural reading
@@ -117,13 +123,14 @@ router.post('/generate-chapter-audio', async (req, res) => {
     const audioUrl = urlData.publicUrl;
     console.log(`🔗 Audio URL: ${audioUrl}`);
 
-    // Cache for future requests
+    // Cache for future requests (with format version)
     await supabase.from('chapter_audio').upsert({
       book_name: bookName,
       chapter: chapter,
       version: version,
       audio_url: audioUrl,
       duration: approximateDuration,
+      format_version: AUDIO_FORMAT_VERSION, // Track audio format version
       generated_at: new Date().toISOString(),
     });
 
