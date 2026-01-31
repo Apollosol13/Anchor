@@ -7,8 +7,25 @@ router.post('/generate-chapter-audio', async (req, res) => {
   try {
     const { verses, bookName, chapter, version } = req.body;
 
+    console.log('🎙️ Audio request received:', { 
+      versesCount: verses?.length, 
+      bookName, 
+      chapter, 
+      version,
+      firstVerse: verses?.[0]
+    });
+
     if (!verses || !Array.isArray(verses)) {
-      return res.status(400).json({ error: 'Verses array is required' });
+      console.error('❌ Verses validation failed:', { verses });
+      return res.status(400).json({ 
+        error: 'Verses array is required',
+        received: typeof verses
+      });
+    }
+
+    if (verses.length === 0) {
+      console.error('❌ Empty verses array');
+      return res.status(400).json({ error: 'Verses array is empty' });
     }
 
     // Combine all verse text with verse numbers for better listening experience
