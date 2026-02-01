@@ -168,25 +168,40 @@ export class BibleService {
         }
       );
 
+      console.log('📖 API Response sample:', JSON.stringify(response.data.data[0], null, 2));
+
       // Map the verses with proper verse numbers from the API
-      const verses = response.data.data.map((verse: any) => {
-        // Extract verse number from the verse ID (format: "GEN.1.1")
-        const verseId = verse.id;
-        const verseNumber = parseInt(verseId.split('.').pop() || '0');
-        
-        return {
-          number: verseNumber,
-          text: verse.content.trim()
-        };
-      });
+      const verses = response.data.data
+        .map((verse: any) => {
+          // Extract verse number from the verse ID (format: "GEN.1.1")
+          const verseId = verse.id;
+          const verseNumber = parseInt(verseId.split('.').pop() || '0');
+          
+          // Handle different possible text fields
+          const text = verse.content || verse.text || verse.orgId || '';
+          
+          if (!text || !verseNumber) {
+            console.warn('⚠️ Skipping invalid verse:', { verseId, hasText: !!text, verseNumber });
+            return null;
+          }
+          
+          return {
+            number: verseNumber,
+            text: text.trim()
+          };
+        })
+        .filter((v: any) => v !== null); // Remove invalid verses
+
+      console.log(`✅ Parsed ${verses.length} verses for ${bookName} ${chapter}`);
 
       return {
         verses,
         reference: `${bookName} ${chapter}`,
         version
       };
-    } catch (error) {
-      console.error('Error fetching chapter:', error);
+    } catch (error: any) {
+      console.error('Error fetching chapter:', error.message);
+      console.error('Error details:', error.response?.data || error);
       throw new Error('Failed to fetch chapter from Bible API');
     }
   }
