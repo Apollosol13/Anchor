@@ -160,37 +160,45 @@ export class BibleService {
       const bookCode = this.getBookCode(bookName);
       const chapterId = `${bookCode}.${chapter}`;
       
-      // Get verses endpoint which returns properly numbered verses
-      const response = await axios.get(
+      // First, get the list of verse IDs
+      const versesListResponse = await axios.get(
         `${this.baseUrl}/bibles/${bibleId}/chapters/${chapterId}/verses`,
         {
           headers: { 'api-key': this.apiKey }
         }
       );
 
-      console.log('📖 API Response sample:', JSON.stringify(response.data.data[0], null, 2));
+      console.log(`📖 Found ${versesListResponse.data.data.length} verses for ${bookName} ${chapter}`);
 
-      // Map the verses with proper verse numbers from the API
-      const verses = response.data.data
-        .map((verse: any) => {
-          // Extract verse number from the verse ID (format: "GEN.1.1")
-          const verseId = verse.id;
-          const verseNumber = parseInt(verseId.split('.').pop() || '0');
+      // Now fetch each verse with its actual text content
+      const versePromises = versesListResponse.data.data.map(async (verseMetadata: any) => {
+        const verseId = verseMetadata.id;
+        const verseNumber = parseInt(verseId.split('.').pop() || '0');
+        
+        try {
+          const verseResponse = await axios.get(
+            `${this.baseUrl}/bibles/${bibleId}/verses/${verseId}`,
+            {
+              headers: { 'api-key': this.apiKey },
+              params: { 'content-type': 'text' }
+            }
+          );
           
-          // Handle different possible text fields
-          const text = verse.content || verse.text || verse.orgId || '';
-          
-          if (!text || !verseNumber) {
-            console.warn('⚠️ Skipping invalid verse:', { verseId, hasText: !!text, verseNumber });
-            return null;
-          }
+          const text = verseResponse.data.data.content || '';
           
           return {
             number: verseNumber,
             text: text.trim()
           };
-        })
-        .filter((v: any) => v !== null); // Remove invalid verses
+        } catch (error) {
+          console.warn(`⚠️ Failed to fetch verse ${verseId}:`, error);
+          return null;
+        }
+      });
+
+      // Wait for all verses to be fetched
+      const versesResults = await Promise.all(versePromises);
+      const verses = versesResults.filter(v => v !== null);
 
       console.log(`✅ Parsed ${verses.length} verses for ${bookName} ${chapter}`);
 
