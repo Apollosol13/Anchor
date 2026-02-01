@@ -164,12 +164,18 @@ export class BibleService {
         `${this.baseUrl}/bibles/${bibleId}/chapters/${chapterId}`,
         {
           headers: { 'api-key': this.apiKey },
-          params: { 'content-type': 'text', 'include-verse-numbers': true }
+          params: { 'content-type': 'json', 'include-verse-numbers': false }
         }
       );
 
+      // The API returns verses as an array
+      const verses = response.data.data.content.map((item: any, index: number) => ({
+        number: index + 1,
+        text: item.text || item
+      }));
+
       return {
-        text: response.data.data.content,
+        verses,
         reference: `${bookName} ${chapter}`,
         version
       };
