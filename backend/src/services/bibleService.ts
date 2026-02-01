@@ -160,18 +160,25 @@ export class BibleService {
       const bookCode = this.getBookCode(bookName);
       const chapterId = `${bookCode}.${chapter}`;
       
+      // Use text format with verse numbers - it's more reliable
       const response = await axios.get(
         `${this.baseUrl}/bibles/${bibleId}/chapters/${chapterId}`,
         {
           headers: { 'api-key': this.apiKey },
-          params: { 'content-type': 'json', 'include-verse-numbers': false }
+          params: { 'content-type': 'text', 'include-verse-numbers': false }
         }
       );
 
-      // The API returns verses as an array
-      const verses = response.data.data.content.map((item: any, index: number) => ({
+      // The API returns plain text with verses separated by newlines
+      const text = response.data.data.content;
+      
+      // Split by newlines and filter empty lines
+      const lines = text.split('\n').filter((line: string) => line.trim());
+      
+      // Each line is a verse
+      const verses = lines.map((line: string, index: number) => ({
         number: index + 1,
-        text: item.text || item
+        text: line.trim()
       }));
 
       return {
