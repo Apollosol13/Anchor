@@ -51,5 +51,10 @@ prisma/migrations/dev.db*
 .turbo
 *.tsbuildinfo
 
+# Apple Sign In - Keep private keys LOCAL ONLY
+*.p8
+generate-apple-secret.js
+apple-sign-in-key.p8
+
 # Local Netlify folder
 .netlify
