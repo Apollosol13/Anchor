@@ -184,11 +184,14 @@ export class BibleService {
             }
           );
           
-          const text = verseResponse.data.data.content || '';
+          let text = verseResponse.data.data.content || '';
+          
+          // Remove verse number brackets like [1], [2], etc. from the beginning
+          text = text.replace(/^\[\d+\]\s*/, '').trim();
           
           return {
             number: verseNumber,
-            text: text.trim()
+            text: text
           };
         } catch (error) {
           console.warn(`⚠️ Failed to fetch verse ${verseId}:`, error);
