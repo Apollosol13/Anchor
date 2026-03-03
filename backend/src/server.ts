@@ -8,6 +8,7 @@ import aiRouter from './routes/ai';
 import imagesRouter from './routes/images';
 import favoritesRouter from './routes/favorites';
 import audioRouter from './routes/audio';
+import notificationsRouter from './routes/notifications';
 
 dotenv.config();
 
@@ -52,6 +53,7 @@ app.use('/api/ai', aiRouter);
 app.use('/api/images', imagesRouter);
 app.use('/api/favorites', favoritesRouter);
 app.use('/api/audio', audioRouter);
+app.use('/api/notifications', notificationsRouter);
 
 // Error handling middleware
 app.use((err: Error, req: Request, res: Response, next: any) => {
