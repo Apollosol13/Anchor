@@ -287,7 +287,8 @@ export class BibleService {
       { id: 'WEB', name: 'World English Bible', abbreviation: 'WEB' },
       { id: 'KJV', name: 'King James Version', abbreviation: 'KJV' },
       { id: 'ASV', name: 'American Standard Version', abbreviation: 'ASV' },
-      { id: 'FBV', name: 'Free Bible Version', abbreviation: 'FBV' }
+      { id: 'FBV', name: 'Free Bible Version', abbreviation: 'FBV' },
+      { id: 'NLT', name: 'New Living Translation', abbreviation: 'NLT' }
     ];
   }
 
@@ -377,7 +378,8 @@ export class BibleService {
       'WEB': '9879dbb7cfe39e4d-02',       // World English Bible (Modern, readable)
       'KJV': 'de4e12af7f28f599-02',       // King James Version (Traditional)
       'ASV': '06125adad2d5898a-01',       // American Standard Version (Formal)
-      'FBV': '65eec8e0b60e656b-01'        // Free Bible Version (Contemporary)
+      'FBV': '65eec8e0b60e656b-01',       // Free Bible Version (Contemporary)
+      'NLT': 'd6e14a625393b4da-01'        // New Living Translation (Licensed)
     };
     
     return versionMap[version.toUpperCase()] || versionMap['WEB'];
