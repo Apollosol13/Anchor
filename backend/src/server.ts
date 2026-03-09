@@ -3,12 +3,14 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
+import cron from 'node-cron';
 import versesRouter from './routes/verses';
 import aiRouter from './routes/ai';
 import imagesRouter from './routes/images';
 import favoritesRouter from './routes/favorites';
 import audioRouter from './routes/audio';
 import notificationsRouter from './routes/notifications';
+import { notificationService } from './services/notificationService';
 
 dotenv.config();
 
@@ -73,6 +75,19 @@ app.use((req: Request, res: Response) => {
 app.listen(PORT, () => {
   console.log(`🚀 Anchor API running on port ${PORT}`);
   console.log(`📖 Environment: ${process.env.NODE_ENV || 'development'}`);
+});
+
+// ── Daily verse cron job ─────────────────────────────────────────────────────
+// Runs every minute to send push notifications to users whose scheduled time matches now
+cron.schedule('* * * * *', async () => {
+  try {
+    const result = await notificationService.sendDailyVerseNotifications();
+    if (result.sent > 0 || result.failed > 0) {
+      console.log(`🔔 Cron: daily verse — sent: ${result.sent}, failed: ${result.failed}`);
+    }
+  } catch (error) {
+    console.error('❌ Cron error (daily verse):', error);
+  }
 });
 
 export default app;
