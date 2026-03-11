@@ -96,25 +96,36 @@ export class NotificationService {
   }
 
   /**
-   * Send daily verse notification to all users who have it enabled
+   * Get current HH:MM in a given IANA timezone
+   */
+  private getCurrentTimeInTimezone(timezone: string): string {
+    try {
+      const now = new Date();
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: timezone,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }).formatToParts(now);
+
+      const hour = parts.find(p => p.type === 'hour')?.value || '00';
+      const minute = parts.find(p => p.type === 'minute')?.value || '00';
+      return `${hour}:${minute}`;
+    } catch {
+      return '';
+    }
+  }
+
+  /**
+   * Send daily verse notification to all users who have it enabled.
+   * Compares each user's scheduled time against the current time in their timezone.
    */
   async sendDailyVerseNotifications(): Promise<{ sent: number; failed: number }> {
     try {
-      console.log('📖 Starting daily verse notification batch...');
-
-      const now = new Date();
-      const currentHour = now.getHours().toString().padStart(2, '0');
-      const currentMinute = now.getMinutes().toString().padStart(2, '0');
-      const currentTime = `${currentHour}:${currentMinute}`;
-
-      console.log(`⏰ Current time: ${currentTime}`);
-
-      // Get users who should receive notifications now
       const { data: users, error } = await supabase
         .from('notification_preferences')
-        .select('user_id, daily_verse_time')
-        .eq('daily_verse_enabled', true)
-        .eq('daily_verse_time', currentTime);
+        .select('user_id, daily_verse_time, timezone')
+        .eq('daily_verse_enabled', true);
 
       if (error) {
         console.error('❌ Error fetching notification preferences:', error);
@@ -122,21 +133,22 @@ export class NotificationService {
       }
 
       if (!users || users.length === 0) {
-        console.log(`⚠️ No users scheduled for ${currentTime}`);
         return { sent: 0, failed: 0 };
       }
-
-      console.log(`📬 Found ${users.length} users to notify`);
 
       let sent = 0;
       let failed = 0;
 
-      // Send notifications to each user
       for (const user of users) {
+        const tz = user.timezone || 'America/New_York';
+        const currentTimeInUserTz = this.getCurrentTimeInTimezone(tz);
+
+        if (currentTimeInUserTz !== user.daily_verse_time) continue;
+
         const success = await this.sendToUser({
           userId: user.user_id,
           title: 'Daily Verse',
-          body: 'Your daily verse is ready! 📖',
+          body: 'Your daily verse is ready.',
           data: { screen: 'home', type: 'daily_verse' },
           sound: 'default',
         });
@@ -147,11 +159,12 @@ export class NotificationService {
           failed++;
         }
 
-        // Small delay to avoid rate limits
         await new Promise(resolve => setTimeout(resolve, 100));
       }
 
-      console.log(`✅ Daily verse notifications complete: ${sent} sent, ${failed} failed`);
+      if (sent > 0 || failed > 0) {
+        console.log(`✅ Daily verse notifications: ${sent} sent, ${failed} failed`);
+      }
       return { sent, failed };
     } catch (error) {
       console.error('❌ Error sending daily verse notifications:', error);
@@ -160,42 +173,50 @@ export class NotificationService {
   }
 
   /**
-   * Send chapter completion notification
+   * Send streak reminders to all users at 8 PM their timezone.
    */
-  async sendChapterCompletion(
-    userId: string, 
-    bookName: string, 
-    chapter: number
-  ): Promise<boolean> {
-    return this.sendToUser({
-      userId,
-      title: 'Chapter Complete! 🎉',
-      body: `Great job finishing ${bookName} ${chapter}!`,
-      data: { 
-        screen: 'bible', 
-        type: 'chapter_completion',
-        book: bookName,
-        chapter 
-      },
-      sound: 'default',
-    });
-  }
+  async sendStreakReminders(): Promise<{ sent: number; failed: number }> {
+    try {
+      const { data: users, error } = await supabase
+        .from('notification_preferences')
+        .select('user_id, timezone')
+        .eq('reading_streak_enabled', true);
 
-  /**
-   * Send reading streak reminder
-   */
-  async sendStreakReminder(userId: string, streakDays: number): Promise<boolean> {
-    return this.sendToUser({
-      userId,
-      title: "Don't Break Your Streak! 🔥",
-      body: `You're on a ${streakDays}-day reading streak. Keep it going!`,
-      data: { 
-        screen: 'home', 
-        type: 'streak_reminder',
-        streakDays 
-      },
-      sound: 'default',
-    });
+      if (error || !users || users.length === 0) {
+        return { sent: 0, failed: 0 };
+      }
+
+      let sent = 0;
+      let failed = 0;
+
+      for (const user of users) {
+        const tz = user.timezone || 'America/New_York';
+        const currentTimeInUserTz = this.getCurrentTimeInTimezone(tz);
+
+        if (currentTimeInUserTz !== '20:00') continue;
+
+        const success = await this.sendToUser({
+          userId: user.user_id,
+          title: "Don't Break Your Streak",
+          body: "Take a few minutes to read today and keep your streak alive.",
+          data: { screen: 'home', type: 'streak_reminder' },
+          sound: 'default',
+        });
+
+        if (success) sent++;
+        else failed++;
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
+      if (sent > 0 || failed > 0) {
+        console.log(`Streak reminders: ${sent} sent, ${failed} failed`);
+      }
+      return { sent, failed };
+    } catch (error) {
+      console.error('Error sending streak reminders:', error);
+      return { sent: 0, failed: 0 };
+    }
   }
 
   /**
@@ -205,7 +226,7 @@ export class NotificationService {
     return this.sendToUser({
       userId,
       title: 'Test Notification',
-      body: 'This is a test notification from Anchor Bible App 🎯',
+      body: 'This is a test notification from Anchor.',
       data: { type: 'test' },
       sound: 'default',
     });

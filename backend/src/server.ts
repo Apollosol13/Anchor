@@ -77,16 +77,13 @@ app.listen(PORT, () => {
   console.log(`📖 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
-// ── Daily verse cron job ─────────────────────────────────────────────────────
-// Runs every minute to send push notifications to users whose scheduled time matches now
+// Runs every minute — sends daily verse + streak reminders based on each user's timezone
 cron.schedule('* * * * *', async () => {
   try {
-    const result = await notificationService.sendDailyVerseNotifications();
-    if (result.sent > 0 || result.failed > 0) {
-      console.log(`🔔 Cron: daily verse — sent: ${result.sent}, failed: ${result.failed}`);
-    }
+    await notificationService.sendDailyVerseNotifications();
+    await notificationService.sendStreakReminders();
   } catch (error) {
-    console.error('❌ Cron error (daily verse):', error);
+    console.error('Cron error:', error);
   }
 });
 

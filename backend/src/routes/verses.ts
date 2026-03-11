@@ -40,28 +40,14 @@ router.get('/chapter/:bookName/:chapter', async (req: Request, res: Response) =>
   }
 });
 
-// Get specific verse
-router.get('/:reference', async (req: Request, res: Response) => {
-  try {
-    const { reference } = req.params;
-    const { version = 'WEB' } = req.query;
-    
-    const verse = await bibleService.getVerse(reference, version as string);
-    res.json(verse);
-  } catch (error) {
-    console.error('Error fetching verse:', error);
-    res.status(500).json({ error: 'Failed to fetch verse' });
-  }
-});
-
-// Search verses
+// Search verses — must be before /:reference wildcard
 router.get('/search/:query', async (req: Request, res: Response) => {
   try {
     const { query } = req.params;
-    const { version = 'ESV', limit = 10 } = req.query;
-    
+    const { version = 'WEB', limit = 20 } = req.query;
+
     const results = await bibleService.searchVerses(
-      query, 
+      query,
       version as string,
       parseInt(limit as string)
     );
@@ -72,7 +58,7 @@ router.get('/search/:query', async (req: Request, res: Response) => {
   }
 });
 
-// Get available Bible versions
+// Get available Bible versions — must be before /:reference wildcard
 router.get('/versions/list', async (req: Request, res: Response) => {
   try {
     const versions = await bibleService.getAvailableVersions();
@@ -80,6 +66,20 @@ router.get('/versions/list', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error fetching versions:', error);
     res.status(500).json({ error: 'Failed to fetch Bible versions' });
+  }
+});
+
+// Get specific verse by API.Bible ID (e.g. ROM.12.2) — wildcard, keep last
+router.get('/:reference', async (req: Request, res: Response) => {
+  try {
+    const { reference } = req.params;
+    const { version = 'WEB' } = req.query;
+
+    const verse = await bibleService.getVerse(reference, version as string);
+    res.json(verse);
+  } catch (error) {
+    console.error('Error fetching verse:', error);
+    res.status(500).json({ error: 'Failed to fetch verse' });
   }
 });
 
