@@ -28,67 +28,6 @@ router.post('/send-daily-verse', async (req: Request, res: Response) => {
 });
 
 /**
- * Send chapter completion notification
- */
-router.post('/chapter-completion', async (req: Request, res: Response) => {
-  try {
-    const { userId, bookName, chapter } = req.body;
-
-    if (!userId || !bookName || !chapter) {
-      return res.status(400).json({ 
-        error: 'Missing required fields: userId, bookName, chapter' 
-      });
-    }
-
-    const success = await notificationService.sendChapterCompletion(
-      userId,
-      bookName,
-      chapter
-    );
-
-    res.json({
-      success,
-      message: success 
-        ? 'Chapter completion notification sent' 
-        : 'Failed to send notification'
-    });
-  } catch (error) {
-    console.error('❌ Error sending chapter completion notification:', error);
-    res.status(500).json({ error: 'Failed to send notification' });
-  }
-});
-
-/**
- * Send reading streak reminder
- */
-router.post('/streak-reminder', async (req: Request, res: Response) => {
-  try {
-    const { userId, streakDays } = req.body;
-
-    if (!userId || !streakDays) {
-      return res.status(400).json({ 
-        error: 'Missing required fields: userId, streakDays' 
-      });
-    }
-
-    const success = await notificationService.sendStreakReminder(
-      userId,
-      streakDays
-    );
-
-    res.json({
-      success,
-      message: success 
-        ? 'Streak reminder sent' 
-        : 'Failed to send notification'
-    });
-  } catch (error) {
-    console.error('❌ Error sending streak reminder:', error);
-    res.status(500).json({ error: 'Failed to send notification' });
-  }
-});
-
-/**
  * Send test notification
  */
 router.post('/test', async (req: Request, res: Response) => {
