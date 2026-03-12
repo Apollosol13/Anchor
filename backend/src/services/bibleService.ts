@@ -265,12 +265,15 @@ export class BibleService {
         }
       );
 
-      return response.data.data.verses.map((v: any) => ({
-        text: v.text.replace(/<[^>]*>/g, '').trim(),
-        reference: v.reference,
-        book: v.reference.split(' ')[0],
-        chapter: parseInt(v.reference.match(/\d+/)?.[0] || '0'),
-        verse: parseInt(v.reference.match(/:(\d+)/)?.[1] || '0'),
+      const verses = response.data?.data?.verses;
+      if (!Array.isArray(verses)) return [];
+
+      return verses.map((v: any) => ({
+        text: (v.text || '').replace(/<[^>]*>/g, '').trim(),
+        reference: v.reference || '',
+        book: (v.reference || '').split(' ')[0],
+        chapter: parseInt((v.reference || '').match(/\d+/)?.[0] || '0'),
+        verse: parseInt((v.reference || '').match(/:(\d+)/)?.[1] || '0'),
         version
       }));
     } catch (error) {

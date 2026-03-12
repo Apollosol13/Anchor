@@ -12,9 +12,18 @@ export interface PushNotification {
 
 export class NotificationService {
   private expo: Expo;
+  private sentLog = new Map<string, string>(); // userId:type -> "HH:MM" last sent
 
   constructor() {
     this.expo = new Expo();
+  }
+
+  private alreadySentThisMinute(userId: string, type: string, currentTime: string): boolean {
+    const key = `${userId}:${type}`;
+    if (this.sentLog.get(key) === currentTime) return true;
+    this.sentLog.set(key, currentTime);
+    if (this.sentLog.size > 10000) this.sentLog.clear();
+    return false;
   }
 
   /**
@@ -40,10 +49,12 @@ export class NotificationService {
         return false;
       }
 
-      // Filter valid Expo push tokens
-      const validTokens = tokens
-        .map(t => t.push_token)
-        .filter(token => Expo.isExpoPushToken(token));
+      // Filter valid Expo push tokens and deduplicate
+      const validTokens = [...new Set(
+        tokens
+          .map(t => t.push_token)
+          .filter(token => Expo.isExpoPushToken(token))
+      )];
 
       if (validTokens.length === 0) {
         console.log('⚠️ No valid Expo push tokens');
@@ -144,6 +155,7 @@ export class NotificationService {
         const currentTimeInUserTz = this.getCurrentTimeInTimezone(tz);
 
         if (currentTimeInUserTz !== user.daily_verse_time) continue;
+        if (this.alreadySentThisMinute(user.user_id, 'daily_verse', currentTimeInUserTz)) continue;
 
         const success = await this.sendToUser({
           userId: user.user_id,
@@ -194,6 +206,7 @@ export class NotificationService {
         const currentTimeInUserTz = this.getCurrentTimeInTimezone(tz);
 
         if (currentTimeInUserTz !== '20:00') continue;
+        if (this.alreadySentThisMinute(user.user_id, 'streak', currentTimeInUserTz)) continue;
 
         const success = await this.sendToUser({
           userId: user.user_id,
