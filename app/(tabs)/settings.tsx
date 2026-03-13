@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  Switch,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { notificationApi } from "@/lib/api";
+import { signOut, useSession } from "@/lib/auth-client";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { signOut, useSession } from "@/lib/auth-client";
-import { notificationApi } from "@/lib/api";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 const VERSIONS = ["WEB", "KJV", "ASV", "FBV", "NLT"];
 
@@ -41,7 +41,7 @@ export default function SettingsScreen() {
   const { data: session } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [, setSaving] = useState(false);
   const [defaultVersion, setDefaultVersion] = useState("WEB");
 
   // Notification prefs

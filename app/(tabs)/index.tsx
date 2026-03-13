@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Dimensions,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -11,8 +10,6 @@ import {
 import { ImageSelector } from "../../components/ImageSelector";
 import { VerseCard } from "../../components/VerseCard";
 import { imageApi, verseApi } from "../../lib/api";
-
-const { width } = Dimensions.get("window");
 
 export default function HomeScreen() {
   const [verse, setVerse] = useState<any>(null);

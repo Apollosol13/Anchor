@@ -1,17 +1,17 @@
+import { signUp } from "@/lib/auth-client";
+import { Link, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useRouter, Link } from "expo-router";
-import { signUp } from "@/lib/auth-client";
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -42,7 +42,7 @@ export default function SignUpScreen() {
       } else {
         router.replace("/(tabs)");
       }
-    } catch (err) {
+    } catch {
       Alert.alert("Error", "Something went wrong. Please try again.");
     } finally {
       setLoading(false);

@@ -15,7 +15,7 @@ export default function BrowseScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedVersion, setSelectedVersion] = useState("ESV");
+  const [selectedVersion] = useState("ESV");
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
