@@ -19,13 +19,13 @@ bun install
 
 You'll need accounts with these services:
 
-| Service | What for | Get it at |
-|---|---|---|
-| **Neon** | Postgres database | [neon.tech](https://neon.tech) |
-| **API.Bible** | Scripture data | [scripture.api.bible](https://scripture.api.bible) |
-| **OpenAI** | AI features + TTS audio | [platform.openai.com](https://platform.openai.com) |
-| **Upstash** | Redis (rate limiting) + QStash (workflows) | [upstash.com](https://upstash.com) |
-| **Cloudflare R2** | File storage (images, audio) | [dash.cloudflare.com](https://dash.cloudflare.com) |
+| Service           | What for                                   | Get it at                                          |
+| ----------------- | ------------------------------------------ | -------------------------------------------------- |
+| **Neon**          | Postgres database                          | [neon.tech](https://neon.tech)                     |
+| **API.Bible**     | Scripture data                             | [scripture.api.bible](https://scripture.api.bible) |
+| **OpenAI**        | AI features + TTS audio                    | [platform.openai.com](https://platform.openai.com) |
+| **Upstash**       | Redis (rate limiting) + QStash (workflows) | [upstash.com](https://upstash.com)                 |
+| **Cloudflare R2** | File storage (images, audio)               | [dash.cloudflare.com](https://dash.cloudflare.com) |
 
 All have free tiers sufficient for development.
 
@@ -103,6 +103,7 @@ bun start
 ```
 
 Then press:
+
 - `i` — open iOS simulator
 - `a` — open Android emulator
 - `w` — open web browser
@@ -127,25 +128,25 @@ This starts a local QStash server at `http://127.0.0.1:8080` that your workflow 
 
 ## Scripts Reference
 
-| Script | What it does |
-|---|---|
-| `bun start` | Start Expo dev server |
-| `bun run web` | Start web only |
-| `bun run ios` | Build + run on iOS simulator |
-| `bun run android` | Build + run on Android emulator |
-| `bun run db:generate` | Generate Drizzle migrations from schema |
-| `bun run db:migrate` | Apply migrations to database |
-| `bun run db:studio` | Open Drizzle Studio (browser-based DB viewer) |
-| `bun run db:seed` | Seed database with sample data |
-| `bun run qstash:local` | Start local QStash dev server |
-| `bun run fmt` | Format code with oxfmt |
-| `bun run fmt:check` | Check formatting (CI) |
-| `bun run lnt` | Lint + auto-fix with oxlint |
-| `bun run lnt:check` | Check lint (CI) |
-| `bun run typecheck` | TypeScript type check |
-| `bun test` | Run tests |
-| `bun test --watch` | Run tests in watch mode |
-| `bun run sanity` | Run all checks (typecheck + lint + format + test) |
+| Script                 | What it does                                      |
+| ---------------------- | ------------------------------------------------- |
+| `bun start`            | Start Expo dev server                             |
+| `bun run web`          | Start web only                                    |
+| `bun run ios`          | Build + run on iOS simulator                      |
+| `bun run android`      | Build + run on Android emulator                   |
+| `bun run db:generate`  | Generate Drizzle migrations from schema           |
+| `bun run db:migrate`   | Apply migrations to database                      |
+| `bun run db:studio`    | Open Drizzle Studio (browser-based DB viewer)     |
+| `bun run db:seed`      | Seed database with sample data                    |
+| `bun run qstash:local` | Start local QStash dev server                     |
+| `bun run fmt`          | Format code with oxfmt                            |
+| `bun run fmt:check`    | Check formatting (CI)                             |
+| `bun run lnt`          | Lint + auto-fix with oxlint                       |
+| `bun run lnt:check`    | Check lint (CI)                                   |
+| `bun run typecheck`    | TypeScript type check                             |
+| `bun test`             | Run tests                                         |
+| `bun test --watch`     | Run tests in watch mode                           |
+| `bun run sanity`       | Run all checks (typecheck + lint + format + test) |
 
 ## Common Issues
 

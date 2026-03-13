@@ -1,11 +1,11 @@
-import { useEffect, useRef } from 'react';
-import { Stack, useRouter, useSegments } from 'expo-router';
-import { Platform } from 'react-native';
-import * as Notifications from 'expo-notifications';
-import * as Device from 'expo-device';
-import Constants from 'expo-constants';
-import { useSession } from '@/lib/auth-client';
-import { notificationApi } from '@/lib/api';
+import { useEffect, useRef } from "react";
+import { Stack, useRouter, useSegments } from "expo-router";
+import { Platform } from "react-native";
+import * as Notifications from "expo-notifications";
+import * as Device from "expo-device";
+import Constants from "expo-constants";
+import { useSession } from "@/lib/auth-client";
+import { notificationApi } from "@/lib/api";
 
 // Configure notification handling
 Notifications.setNotificationHandler({
@@ -26,16 +26,16 @@ function useProtectedRoute() {
   useEffect(() => {
     if (isPending) return;
 
-    const inAuthGroup = segments[0] === 'sign-in' || segments[0] === 'sign-up';
-    const inMarketing = segments[0] === '(marketing)';
+    const inAuthGroup = segments[0] === "sign-in" || segments[0] === "sign-up";
+    const inMarketing = segments[0] === "(marketing)";
 
     // Allow marketing pages without auth (web only)
     if (inMarketing) return;
 
     if (!session && !inAuthGroup) {
-      router.replace('/sign-in');
+      router.replace("/sign-in");
     } else if (session && inAuthGroup) {
-      router.replace('/(tabs)');
+      router.replace("/(tabs)");
     }
   }, [session, isPending, segments]);
 
@@ -48,7 +48,7 @@ function usePushNotifications(isAuthenticated: boolean) {
   const router = useRouter();
 
   useEffect(() => {
-    if (Platform.OS === 'web' || !isAuthenticated) return;
+    if (Platform.OS === "web" || !isAuthenticated) return;
 
     // Register for push notifications
     async function register() {
@@ -57,12 +57,12 @@ function usePushNotifications(isAuthenticated: boolean) {
       const { status: existing } = await Notifications.getPermissionsAsync();
       let finalStatus = existing;
 
-      if (existing !== 'granted') {
+      if (existing !== "granted") {
         const { status } = await Notifications.requestPermissionsAsync();
         finalStatus = status;
       }
 
-      if (finalStatus !== 'granted') return;
+      if (finalStatus !== "granted") return;
 
       const projectId = Constants.expoConfig?.extra?.eas?.projectId;
       const tokenData = await Notifications.getExpoPushTokenAsync({
@@ -73,16 +73,16 @@ function usePushNotifications(isAuthenticated: boolean) {
       try {
         await notificationApi.registerToken(
           tokenData.data,
-          Platform.OS as 'ios' | 'android'
+          Platform.OS as "ios" | "android",
         );
       } catch (err) {
-        console.error('Failed to register push token:', err);
+        console.error("Failed to register push token:", err);
       }
 
       // Android notification channel
-      if (Platform.OS === 'android') {
-        await Notifications.setNotificationChannelAsync('default', {
-          name: 'Default',
+      if (Platform.OS === "android") {
+        await Notifications.setNotificationChannelAsync("default", {
+          name: "Default",
           importance: Notifications.AndroidImportance.MAX,
           vibrationPattern: [0, 250, 250, 250],
         });
@@ -94,14 +94,14 @@ function usePushNotifications(isAuthenticated: boolean) {
     // Listen for notifications
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
-        console.log('Notification received:', notification);
+        console.log("Notification received:", notification);
       });
 
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
         const data = response.notification.request.content.data;
-        if (data?.screen === 'home') {
-          router.push('/(tabs)');
+        if (data?.screen === "home") {
+          router.push("/(tabs)");
         }
       });
 
@@ -120,30 +120,18 @@ export default function RootLayout() {
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#000000',
+          backgroundColor: "#000000",
         },
-        headerTintColor: '#fff',
+        headerTintColor: "#fff",
         headerTitleStyle: {
-          fontWeight: 'bold',
+          fontWeight: "bold",
         },
       }}
     >
-      <Stack.Screen
-        name="(tabs)"
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="(marketing)"
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="sign-in"
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="sign-up"
-        options={{ headerShown: false }}
-      />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="(marketing)" options={{ headerShown: false }} />
+      <Stack.Screen name="sign-in" options={{ headerShown: false }} />
+      <Stack.Screen name="sign-up" options={{ headerShown: false }} />
     </Stack>
   );
 }

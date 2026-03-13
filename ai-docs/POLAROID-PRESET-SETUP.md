@@ -15,6 +15,7 @@
 ## 📝 How It Works:
 
 ### User Flow:
+
 1. User taps **"Share"** on a verse
 2. Selects **"Background Presets"**
 3. Chooses **"Polaroid"**

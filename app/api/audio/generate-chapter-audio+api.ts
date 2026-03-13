@@ -69,11 +69,7 @@ export async function POST(request: Request) {
 
     // Upload to R2
     const key = `chapter-audio/${bookName.toLowerCase()}_${chapter}_${version.toLowerCase()}.mp3`;
-    const audioUrl = await uploadFile(
-      key,
-      audioBuffer,
-      "audio/mpeg",
-    );
+    const audioUrl = await uploadFile(key, audioBuffer, "audio/mpeg");
 
     // Cache in database
     await db
@@ -87,7 +83,11 @@ export async function POST(request: Request) {
         formatVersion: AUDIO_FORMAT_VERSION,
       })
       .onConflictDoUpdate({
-        target: [chapterAudio.bookName, chapterAudio.chapter, chapterAudio.version],
+        target: [
+          chapterAudio.bookName,
+          chapterAudio.chapter,
+          chapterAudio.version,
+        ],
         set: {
           audioUrl,
           duration: approximateDuration,

@@ -1,6 +1,6 @@
-import { db } from '@/server/db';
-import { imagePresets } from '@/server/db/schema';
-import { and, eq } from 'drizzle-orm';
+import { db } from "@/server/db";
+import { imagePresets } from "@/server/db/schema";
+import { and, eq } from "drizzle-orm";
 
 export async function getPresets(category?: string) {
   let query = db
@@ -9,11 +9,16 @@ export async function getPresets(category?: string) {
     .where(eq(imagePresets.isActive, true))
     .orderBy(imagePresets.sortOrder);
 
-  if (category && category !== 'all') {
+  if (category && category !== "all") {
     return db
       .select()
       .from(imagePresets)
-      .where(and(eq(imagePresets.isActive, true), eq(imagePresets.category, category)))
+      .where(
+        and(
+          eq(imagePresets.isActive, true),
+          eq(imagePresets.category, category),
+        ),
+      )
       .orderBy(imagePresets.sortOrder);
   }
 

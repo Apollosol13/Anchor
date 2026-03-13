@@ -40,14 +40,14 @@ bun start                                                   # start Expo dev ser
 
 ## Environment
 
-| File | Purpose | Git |
-|---|---|---|
-| `.env` | Shared defaults | Committed |
-| `.env.development` | Dev URLs | Committed |
-| `.env.production` | Prod URLs | Committed |
-| `.env.development.local` | Dev secrets | Ignored |
-| `.env.production.local` | Prod secrets | Ignored |
-| `.env.local` | Personal overrides | Ignored |
+| File                     | Purpose            | Git       |
+| ------------------------ | ------------------ | --------- |
+| `.env`                   | Shared defaults    | Committed |
+| `.env.development`       | Dev URLs           | Committed |
+| `.env.production`        | Prod URLs          | Committed |
+| `.env.development.local` | Dev secrets        | Ignored   |
+| `.env.production.local`  | Prod secrets       | Ignored   |
+| `.env.local`             | Personal overrides | Ignored   |
 
 ## Project Structure
 

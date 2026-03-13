@@ -3,6 +3,7 @@
 ## What Was Done
 
 ### 1. ✅ Apple Developer Configuration
+
 - **App ID Created**: `io.anchrapp.anchor`
 - **Team ID**: `6YZSFD7L5N`
 - **Capabilities Enabled**:
@@ -11,12 +12,14 @@
   - ✅ App Groups
 
 ### 2. ✅ Code Updates
+
 - **`app.config.js`**: Updated iOS bundleIdentifier and Android package
 - **`eas.json`**: Created with proper build configurations
 - **Apple App Site Association**: Updated with Team ID `6YZSFD7L5N.io.anchrapp.anchor`
 - **Android Asset Links**: Updated package name
 
 ### 3. ✅ Website Deployment
+
 - **Deployed to**: https://anchrapp.io
 - **Universal Links File**: https://anchrapp.io/.well-known/apple-app-site-association
 - **Status**: ✅ Live and verified with correct Team ID
@@ -28,11 +31,13 @@
 Go to your Supabase Dashboard → Authentication → URL Configuration:
 
 **Site URL:**
+
 ```
 https://anchrapp.io
 ```
 
 **Redirect URLs (Add both):**
+
 ```
 io.anchrapp.anchor://auth/callback
 https://anchrapp.io/auth/callback

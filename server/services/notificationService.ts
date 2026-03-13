@@ -91,9 +91,7 @@ export async function sendToUser(
 
     if (staleTokens.length > 0) {
       for (const token of staleTokens) {
-        await db
-          .delete(pushTokens)
-          .where(eq(pushTokens.pushToken, token));
+        await db.delete(pushTokens).where(eq(pushTokens.pushToken, token));
       }
       console.log(`Cleaned up ${staleTokens.length} stale push tokens`);
     }
@@ -189,34 +187,32 @@ export async function findStreakReminderRecipients(): Promise<UserToNotify[]> {
 
 // ─── Workflow: durable scheduled notification pipeline ───
 
-export const notificationWorkflow = serve(
-  async (context) => {
-    const dailyVerseUsers = await context.run(
-      "find-daily-verse-recipients",
-      findDailyVerseRecipients,
-    );
+export const notificationWorkflow = serve(async (context) => {
+  const dailyVerseUsers = await context.run(
+    "find-daily-verse-recipients",
+    findDailyVerseRecipients,
+  );
 
-    const streakUsers = await context.run(
-      "find-streak-reminder-recipients",
-      findStreakReminderRecipients,
-    );
+  const streakUsers = await context.run(
+    "find-streak-reminder-recipients",
+    findStreakReminderRecipients,
+  );
 
-    const allUsers = [...dailyVerseUsers, ...streakUsers];
-    if (allUsers.length === 0) return;
+  const allUsers = [...dailyVerseUsers, ...streakUsers];
+  if (allUsers.length === 0) return;
 
-    // Send notifications in parallel — each is an independent durable step
-    await Promise.all(
-      allUsers.map((user) =>
-        context.run(`send-${user.type}-${user.userId}`, () =>
-          sendToUser({
-            userId: user.userId,
-            title: user.title,
-            body: user.body,
-            data: user.data,
-            sound: "default",
-          }),
-        ),
+  // Send notifications in parallel — each is an independent durable step
+  await Promise.all(
+    allUsers.map((user) =>
+      context.run(`send-${user.type}-${user.userId}`, () =>
+        sendToUser({
+          userId: user.userId,
+          title: user.title,
+          body: user.body,
+          data: user.data,
+          sound: "default",
+        }),
       ),
-    );
-  },
-);
+    ),
+  );
+});

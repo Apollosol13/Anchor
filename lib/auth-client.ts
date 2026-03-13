@@ -1,10 +1,10 @@
-import { expoClient } from '@better-auth/expo/client';
-import { createAuthClient } from 'better-auth/react';
-import * as SecureStore from 'expo-secure-store';
-import { Platform } from 'react-native';
+import { expoClient } from "@better-auth/expo/client";
+import { createAuthClient } from "better-auth/react";
+import * as SecureStore from "expo-secure-store";
+import { Platform } from "react-native";
 
 const storage =
-  Platform.OS !== 'web'
+  Platform.OS !== "web"
     ? SecureStore
     : {
         getItem: (key: string) => {
@@ -22,11 +22,11 @@ const storage =
       };
 
 export const authClient = createAuthClient({
-  baseURL: process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8081',
+  baseURL: process.env.EXPO_PUBLIC_API_URL || "http://localhost:8081",
   plugins: [
     expoClient({
-      scheme: 'anchor',
-      storagePrefix: 'anchor-auth',
+      scheme: "anchor",
+      storagePrefix: "anchor-auth",
       storage,
     }),
   ],

@@ -50,6 +50,7 @@ ALTER TABLE IF EXISTS "ImagePreset" ENABLE ROW LEVEL SECURITY;
 3. Set storage policies:
 
 **For preset-images:**
+
 ```sql
 -- Allow public read
 CREATE POLICY "Public can view preset images"
@@ -63,6 +64,7 @@ WITH CHECK (bucket_id = 'preset-images' AND auth.role() = 'authenticated');
 ```
 
 **For user-uploads:**
+
 ```sql
 -- Allow public read
 CREATE POLICY "Public can view user uploads"
@@ -73,7 +75,7 @@ USING (bucket_id = 'user-uploads');
 CREATE POLICY "Users can upload their own images"
 ON storage.objects FOR INSERT
 WITH CHECK (
-  bucket_id = 'user-uploads' 
+  bucket_id = 'user-uploads'
   AND (storage.foldername(name))[1] = auth.uid()::text
 );
 ```
@@ -174,6 +176,7 @@ ALLOWED_ORIGINS = https://your-frontend-domain.com
    - **Output Directory**: `dist`
 
 5. Add Environment Variables:
+
 ```
 VITE_SUPABASE_URL = your-supabase-url
 VITE_SUPABASE_ANON_KEY = your-supabase-anon-key
@@ -203,6 +206,7 @@ After frontend is deployed:
 
 1. Go back to Railway
 2. Update the `ALLOWED_ORIGINS` variable:
+
 ```
 ALLOWED_ORIGINS = https://your-vercel-app.vercel.app,http://localhost:5173
 ```
@@ -218,6 +222,7 @@ You'll want to add some beautiful preset images:
 ### 6.1 Find Images
 
 Use free image sources:
+
 - [Unsplash](https://unsplash.com) - Search: "nature", "sunset", "mountains"
 - [Pexels](https://pexels.com) - Beautiful free photos
 - Make sure images are landscape orientation (16:9 or 4:3)
@@ -235,7 +240,7 @@ Use the Supabase SQL Editor:
 
 ```sql
 INSERT INTO "ImagePreset" (id, name, "imageUrl", category, tags, "isActive", "sortOrder", "createdAt")
-VALUES 
+VALUES
   (gen_random_uuid(), 'Beautiful Sunset', 'https://your-supabase.co/storage/v1/object/public/preset-images/sunset1.jpg', 'sunset', ARRAY['peaceful', 'warm'], true, 1, NOW()),
   (gen_random_uuid(), 'Mountain Peaks', 'https://your-supabase.co/storage/v1/object/public/preset-images/mountain1.jpg', 'mountains', ARRAY['inspiring', 'nature'], true, 2, NOW()),
   (gen_random_uuid(), 'Ocean Waves', 'https://your-supabase.co/storage/v1/object/public/preset-images/ocean1.jpg', 'ocean', ARRAY['peaceful', 'blue'], true, 3, NOW());
@@ -351,6 +356,7 @@ curl https://your-railway-backend.railway.app/api/verses/verse-of-day
 ## Support
 
 For issues:
+
 - Check Railway logs
 - Review Supabase logs
 - Check browser console for frontend errors

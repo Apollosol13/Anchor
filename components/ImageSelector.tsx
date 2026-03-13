@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,10 +8,10 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
-} from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { Ionicons } from '@expo/vector-icons';
-import { imageApi, uploadApi } from '../lib/api';
+} from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { Ionicons } from "@expo/vector-icons";
+import { imageApi, uploadApi } from "../lib/api";
 
 interface ImageSelectorProps {
   onImageSelect: (imageUrl: string) => void;
@@ -23,10 +23,18 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
   currentImage,
 }) => {
   const [presets, setPresets] = useState<any[]>([]);
-  const [category, setCategory] = useState('all');
+  const [category, setCategory] = useState("all");
   const [loading, setLoading] = useState(true);
 
-  const categories = ['all', 'nature', 'abstract', 'minimalist', 'sunset', 'ocean', 'mountains'];
+  const categories = [
+    "all",
+    "nature",
+    "abstract",
+    "minimalist",
+    "sunset",
+    "ocean",
+    "mountains",
+  ];
 
   useEffect(() => {
     fetchPresets();
@@ -35,10 +43,12 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
   const fetchPresets = async () => {
     setLoading(true);
     try {
-      const data = await imageApi.getPresets(category === 'all' ? undefined : category);
+      const data = await imageApi.getPresets(
+        category === "all" ? undefined : category,
+      );
       setPresets(data || []);
     } catch (error) {
-      console.error('Error fetching presets:', error);
+      console.error("Error fetching presets:", error);
     } finally {
       setLoading(false);
     }
@@ -46,10 +56,14 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
 
   const handleCustomUpload = async () => {
     try {
-      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      
+      const permissionResult =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+
       if (!permissionResult.granted) {
-        Alert.alert('Permission Required', 'Please allow access to your photos');
+        Alert.alert(
+          "Permission Required",
+          "Please allow access to your photos",
+        );
         return;
       }
 
@@ -67,18 +81,18 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
         // Get presigned URL from server
         const { uploadUrl, publicUrl } = await uploadApi.getPresignedUrl(
           filename,
-          'image/jpeg',
+          "image/jpeg",
         );
 
         // Upload directly to R2
         const blob = await (await fetch(uri)).blob();
-        await uploadApi.uploadToPresignedUrl(uploadUrl, blob, 'image/jpeg');
+        await uploadApi.uploadToPresignedUrl(uploadUrl, blob, "image/jpeg");
 
         onImageSelect(publicUrl);
       }
     } catch (error) {
-      console.error('Error uploading image:', error);
-      Alert.alert('Error', 'Failed to upload image');
+      console.error("Error uploading image:", error);
+      Alert.alert("Error", "Failed to upload image");
     }
   };
 
@@ -146,7 +160,10 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
         </ScrollView>
       )}
 
-      <TouchableOpacity style={styles.uploadButton} onPress={handleCustomUpload}>
+      <TouchableOpacity
+        style={styles.uploadButton}
+        onPress={handleCustomUpload}
+      >
         <Ionicons name="cloud-upload-outline" size={24} color="#ffffff" />
         <Text style={styles.uploadText}>Upload Your Own</Text>
       </TouchableOpacity>
@@ -156,13 +173,13 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
+    width: "100%",
   },
   title: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 12,
-    color: '#ffffff',
+    color: "#ffffff",
   },
   categoryScroll: {
     marginBottom: 16,
@@ -175,22 +192,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: "#1a1a1a",
     marginRight: 8,
     borderWidth: 1,
-    borderColor: '#2a2a2a',
+    borderColor: "#2a2a2a",
   },
   categoryButtonActive: {
-    backgroundColor: '#ffffff',
-    borderColor: '#ffffff',
+    backgroundColor: "#ffffff",
+    borderColor: "#ffffff",
   },
   categoryText: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#9ca3af',
+    fontWeight: "500",
+    color: "#9ca3af",
   },
   categoryTextActive: {
-    color: '#000000',
+    color: "#000000",
   },
   loader: {
     marginVertical: 32,
@@ -206,44 +223,44 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 12,
-    overflow: 'hidden',
+    overflow: "hidden",
     marginRight: 12,
     borderWidth: 2,
-    borderColor: '#2a2a2a',
+    borderColor: "#2a2a2a",
   },
   presetCardSelected: {
-    borderColor: '#ffffff',
+    borderColor: "#ffffff",
   },
   presetImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   selectedBadge: {
-    position: 'absolute',
+    position: "absolute",
     top: 6,
     right: 6,
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     borderRadius: 12,
     width: 24,
     height: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   uploadButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 12,
     padding: 18,
     borderWidth: 2,
-    borderStyle: 'dashed',
-    borderColor: '#3a3a3a',
+    borderStyle: "dashed",
+    borderColor: "#3a3a3a",
     borderRadius: 12,
-    backgroundColor: '#0a0a0a',
+    backgroundColor: "#0a0a0a",
   },
   uploadText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
+    fontWeight: "600",
+    color: "#ffffff",
   },
 });

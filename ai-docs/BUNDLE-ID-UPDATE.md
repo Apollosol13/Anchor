@@ -7,10 +7,12 @@ Your app now uses: **`io.anchrapp.anchor`**
 ## Files Updated
 
 ### 1. Frontend Configuration
+
 - ✅ `frontend-new/app.config.js` - Updated iOS bundleIdentifier and Android package
 - ✅ `frontend-new/eas.json` - Created with proper build configurations
 
-### 2. Website Configuration  
+### 2. Website Configuration
+
 - ✅ `anchrapp-web/public/.well-known/apple-app-site-association` - Updated for iOS Universal Links
 - ✅ `anchrapp-web/public/.well-known/assetlinks.json` - Updated for Android App Links
 
@@ -21,16 +23,19 @@ Your app now uses: **`io.anchrapp.anchor`**
 In `anchrapp-web/public/.well-known/apple-app-site-association`, replace `TEAMID` with your actual Apple Developer Team ID:
 
 **Before:**
+
 ```json
 "appID": "TEAMID.io.anchrapp.anchor"
 ```
 
 **After:**
+
 ```json
 "appID": "YOUR_TEAM_ID.io.anchrapp.anchor"
 ```
 
 **Where to find your Team ID:**
+
 - Go to https://developer.apple.com/account
 - Click on "Membership" in the sidebar
 - Your Team ID is listed there (10-character code like "A1B2C3D4E5")
@@ -40,10 +45,12 @@ In `anchrapp-web/public/.well-known/apple-app-site-association`, replace `TEAMID
 In your Supabase dashboard (Authentication → URL Configuration):
 
 **Add these redirect URLs:**
+
 - `io.anchrapp.anchor://auth/callback` (for iOS)
 - `https://anchrapp.io/auth/callback` (for web/universal links)
 
 **Site URL:**
+
 - `https://anchrapp.io`
 
 ### 3. Redeploy Website to Netlify
@@ -62,6 +69,7 @@ This ensures the updated Universal Links configuration is live.
 When you build your Android app, you'll need to add the SHA-256 certificate fingerprint to `assetlinks.json`.
 
 **To get the fingerprint:**
+
 ```bash
 # For development/debug builds
 cd android && ./gradlew signingReport
@@ -75,6 +83,7 @@ Then add the fingerprint to `anchrapp-web/public/.well-known/assetlinks.json`.
 ## Next Steps for Building
 
 ### For iOS (TestFlight/App Store):
+
 1. Install EAS CLI: `npm install -g eas-cli`
 2. Login to Expo: `eas login`
 3. Configure: `eas build:configure`
@@ -82,6 +91,7 @@ Then add the fingerprint to `anchrapp-web/public/.well-known/assetlinks.json`.
 5. Submit to TestFlight: `eas submit --platform ios`
 
 ### For Android (Google Play):
+
 1. Build for Android: `eas build --platform android`
 2. Submit to Google Play: `eas submit --platform android`
 
@@ -96,6 +106,7 @@ Then add the fingerprint to `anchrapp-web/public/.well-known/assetlinks.json`.
 ## Verification
 
 Test Universal Links:
+
 1. Build your app for TestFlight or a real device
 2. Send yourself a Supabase auth email
 3. Click the link - it should open directly in your app (not browser)

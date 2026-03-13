@@ -3,6 +3,7 @@
 ## ✅ What's Been Built
 
 ### 1. **Survey Screen** (`/app/onboarding/survey.tsx`)
+
 - Beautiful 3-question onboarding survey
 - Smooth progress bar
 - Question 1: "What brings you to Anchor?"
@@ -12,6 +13,7 @@
 - Auto-advances to paywall after completion
 
 ### 2. **Hard Paywall** (`/app/onboarding/paywall.tsx`)
+
 - Mandatory subscription/trial before app access
 - Prominent "Start 7-Day Free Trial" button
 - Shows 6 premium benefits with icons
@@ -22,12 +24,14 @@
 - Redirects to main app after trial starts
 
 ### 3. **Smart Auth Flow** (`/app/_layout.tsx`)
+
 - Checks onboarding status on login
 - New users → Survey → Paywall → App
 - Returning users → App directly
 - Blocks access to main app without trial/subscription
 
 ### 4. **Database** (Supabase)
+
 - `user_onboarding` table tracking:
   - Survey responses
   - Onboarding completion
@@ -60,6 +64,7 @@
 ## 🎯 How It Works
 
 ### First-Time User Journey:
+
 1. User signs up with email/password
 2. Automatically redirected to `/onboarding/survey`
 3. Answers 3 quick questions
@@ -70,6 +75,7 @@
 8. Redirected to `/(tabs)` - main app
 
 ### Returning User Journey:
+
 1. User logs in
 2. System checks `has_completed_onboarding`
 3. If true → Direct to main app
@@ -80,19 +86,23 @@
 ## 🔧 Technical Details
 
 ### Files Created:
+
 - `/app/onboarding/survey.tsx` - Survey screen
 - `/app/onboarding/paywall.tsx` - Hard paywall
 
 ### Files Modified:
+
 - `/app/_layout.tsx` - Auth flow with onboarding check
 - Database: `user_onboarding` table
 
 ### State Management:
+
 - Uses existing `SubscriptionContext` for purchases
 - Uses existing `AuthContext` for user
 - Queries Supabase for onboarding status
 
 ### Data Saved:
+
 ```typescript
 {
   user_id: string,
@@ -111,13 +121,16 @@
 ## ⚠️ Important Notes
 
 ### 7-Day Trial Setup:
+
 **In App Store Connect (when you create subscriptions):**
+
 1. For each product (weekly/monthly/yearly)
 2. Add "Introductory Offer"
 3. Set to: **7 days free**
 4. This is configured in Apple's system, not in code
 
 ### Trial Behavior:
+
 - Requires payment method upfront
 - User isn't charged for 7 days
 - After 7 days, automatically converts to paid
@@ -125,6 +138,7 @@
 - RevenueCat SDK handles trial state automatically
 
 ### Hard Paywall:
+
 - No "Continue with Free" option
 - User MUST start trial to use app
 - Higher commitment but higher value perception
@@ -135,14 +149,16 @@
 ## 🧪 Testing the Flow
 
 ### Test Right Now (Without App Store Connect):
+
 1. Run your app: `npx expo start`
 2. Sign up with new account
 3. See survey screen appear
 4. Answer 3 questions
 5. See paywall screen
-6. *(Purchase won't work yet - need App Store Connect)*
+6. _(Purchase won't work yet - need App Store Connect)_
 
 ### After App Store Connect Setup:
+
 1. Create sandbox tester account
 2. Test full purchase flow
 3. Verify trial starts correctly
@@ -153,6 +169,7 @@
 ## 🎨 UI Features
 
 ### Survey Screen:
+
 - ✅ Progress bar (1 of 3, 2 of 3, 3 of 3)
 - ✅ Beautiful gradient icons
 - ✅ Large touch targets
@@ -161,6 +178,7 @@
 - ✅ Auto-save and auto-advance
 
 ### Paywall Screen:
+
 - ✅ Gradient hero with diamond icon
 - ✅ 6 benefit items with checkmarks
 - ✅ Trial info banner
@@ -174,6 +192,7 @@
 ## 📊 Analytics Opportunities
 
 With survey data, you can:
+
 1. **Personalize onboarding**: Show relevant features first
 2. **Segment users**: Target messaging by goals
 3. **Optimize conversion**: A/B test survey questions
@@ -181,14 +200,15 @@ With survey data, you can:
 5. **Marketing insights**: Understand your audience
 
 ### Example Queries:
+
 ```sql
 -- Most popular goal
-SELECT primary_goal, COUNT(*) 
-FROM user_onboarding 
+SELECT primary_goal, COUNT(*)
+FROM user_onboarding
 GROUP BY primary_goal;
 
 -- Conversion by reading frequency
-SELECT 
+SELECT
   reading_frequency,
   COUNT(*) as total,
   SUM(CASE WHEN has_completed_onboarding THEN 1 ELSE 0 END) as converted
@@ -201,6 +221,7 @@ GROUP BY reading_frequency;
 ## ⏭️ What's Next
 
 ### Still Need to Do:
+
 1. **App Store Connect Setup** (USER ACTION)
    - Create 3 subscription products
    - Configure 7-day trial for each
@@ -225,12 +246,14 @@ GROUP BY reading_frequency;
 Your onboarding flow is complete and ready to test in the app!
 
 **Run it:**
+
 ```bash
 cd frontend-new
 npx expo start
 ```
 
 **What to test:**
+
 1. Sign up flow works
 2. Survey appears after signup
 3. Paywall appears after survey
@@ -242,6 +265,7 @@ npx expo start
 ## 💡 Pro Tips
 
 ### Conversion Optimization:
+
 - Keep survey short (3 questions is perfect)
 - Show value before asking for payment
 - Make trial prominent ("7 days FREE")
@@ -249,6 +273,7 @@ npx expo start
 - A/B test messaging
 
 ### User Experience:
+
 - Survey feels personal, not salesy
 - Paywall emphasizes benefits, not features
 - Trial reduces risk for users

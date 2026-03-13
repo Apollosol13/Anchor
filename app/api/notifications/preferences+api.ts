@@ -1,7 +1,7 @@
-import { checkRateLimit, error, json, requireSession } from '@/lib/api-helpers';
-import { db } from '@/server/db';
-import { notificationPreferences } from '@/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { checkRateLimit, error, json, requireSession } from "@/lib/api-helpers";
+import { db } from "@/server/db";
+import { notificationPreferences } from "@/server/db/schema";
+import { eq } from "drizzle-orm";
 
 export async function GET(request: Request) {
   try {
@@ -21,27 +21,29 @@ export async function GET(request: Request) {
         .values({
           userId: session.user.id,
           dailyVerseEnabled: true,
-          dailyVerseTime: '09:00',
-          timezone: 'America/New_York',
+          dailyVerseTime: "09:00",
+          timezone: "America/New_York",
           readingStreakEnabled: true,
           chapterCompletionEnabled: true,
         })
         .onConflictDoNothing()
         .returning();
 
-      return json(created ?? {
-        dailyVerseEnabled: true,
-        dailyVerseTime: '09:00',
-        timezone: 'America/New_York',
-        readingStreakEnabled: true,
-        chapterCompletionEnabled: true,
-      });
+      return json(
+        created ?? {
+          dailyVerseEnabled: true,
+          dailyVerseTime: "09:00",
+          timezone: "America/New_York",
+          readingStreakEnabled: true,
+          chapterCompletionEnabled: true,
+        },
+      );
     }
 
     return json(prefs);
   } catch (err) {
     if (err instanceof Response) return err;
-    return error('Failed to fetch notification preferences');
+    return error("Failed to fetch notification preferences");
   }
 }
 
@@ -56,8 +58,8 @@ export async function PUT(request: Request) {
       .values({
         userId: session.user.id,
         dailyVerseEnabled: body.dailyVerseEnabled ?? true,
-        dailyVerseTime: body.dailyVerseTime ?? '09:00',
-        timezone: body.timezone ?? 'America/New_York',
+        dailyVerseTime: body.dailyVerseTime ?? "09:00",
+        timezone: body.timezone ?? "America/New_York",
         readingStreakEnabled: body.readingStreakEnabled ?? true,
         chapterCompletionEnabled: body.chapterCompletionEnabled ?? true,
       })
@@ -77,6 +79,6 @@ export async function PUT(request: Request) {
     return json(prefs);
   } catch (err) {
     if (err instanceof Response) return err;
-    return error('Failed to update notification preferences');
+    return error("Failed to update notification preferences");
   }
 }

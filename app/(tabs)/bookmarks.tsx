@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,8 +6,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 interface Bookmark {
   id: string;
@@ -33,19 +33,19 @@ export default function BookmarksScreen() {
 
   const deleteBookmark = (id: string) => {
     Alert.alert(
-      'Remove Bookmark',
-      'Are you sure you want to remove this bookmark?',
+      "Remove Bookmark",
+      "Are you sure you want to remove this bookmark?",
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Remove',
-          style: 'destructive',
+          text: "Remove",
+          style: "destructive",
           onPress: () => {
             // TODO: Delete from Supabase
-            setBookmarks(bookmarks.filter(b => b.id !== id));
+            setBookmarks(bookmarks.filter((b) => b.id !== id));
           },
         },
-      ]
+      ],
     );
   };
 
@@ -88,55 +88,55 @@ export default function BookmarksScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000',
+    backgroundColor: "#000000",
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000000',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#000000",
     padding: 24,
   },
   emptyTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    fontWeight: "bold",
+    color: "#ffffff",
     marginTop: 16,
     marginBottom: 8,
   },
   emptyText: {
     fontSize: 16,
-    color: '#6b7280',
-    textAlign: 'center',
+    color: "#6b7280",
+    textAlign: "center",
   },
   content: {
     padding: 16,
   },
   bookmarkCard: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: "#1a1a1a",
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-    flexDirection: 'row',
+    flexDirection: "row",
     borderWidth: 1,
-    borderColor: '#2a2a2a',
+    borderColor: "#2a2a2a",
   },
   bookmarkContent: {
     flex: 1,
   },
   verseText: {
     fontSize: 16,
-    color: '#ffffff',
+    color: "#ffffff",
     lineHeight: 24,
     marginBottom: 8,
   },
   reference: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#9ca3af',
+    fontWeight: "600",
+    color: "#9ca3af",
   },
   deleteButton: {
     padding: 8,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
 });

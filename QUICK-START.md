@@ -51,16 +51,16 @@ bun start
 
 ## What You Get
 
-| Feature | How it works |
-|---|---|
-| **Daily Verse** | Themed by day of week, cached in DB, fetched from API.Bible |
-| **Bible Reader** | Browse books + chapters, 5 translations |
-| **AI Explanations** | OpenAI GPT-3.5 with per-user daily rate limits |
-| **Verse Images** | Preset backgrounds + custom uploads, share/download |
-| **Audio Bible** | OpenAI TTS, cached per chapter |
-| **Push Notifications** | Expo push tokens + Upstash Workflow scheduling |
-| **Auth** | Email/password via Better Auth, session-protected API routes |
-| **Web Pages** | Landing page, privacy policy, terms of service |
+| Feature                | How it works                                                 |
+| ---------------------- | ------------------------------------------------------------ |
+| **Daily Verse**        | Themed by day of week, cached in DB, fetched from API.Bible  |
+| **Bible Reader**       | Browse books + chapters, 5 translations                      |
+| **AI Explanations**    | OpenAI GPT-3.5 with per-user daily rate limits               |
+| **Verse Images**       | Preset backgrounds + custom uploads, share/download          |
+| **Audio Bible**        | OpenAI TTS, cached per chapter                               |
+| **Push Notifications** | Expo push tokens + Upstash Workflow scheduling               |
+| **Auth**               | Email/password via Better Auth, session-protected API routes |
+| **Web Pages**          | Landing page, privacy policy, terms of service               |
 
 ## Key Scripts
 

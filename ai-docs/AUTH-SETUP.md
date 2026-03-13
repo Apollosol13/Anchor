@@ -28,6 +28,7 @@
 Go to your Supabase Dashboard → Authentication → Providers
 
 Make sure **Email** provider is enabled with these settings:
+
 - ✅ Enable email provider
 - ✅ Confirm email (recommended)
 - Email templates can be customized under Authentication → Email Templates
@@ -44,6 +45,7 @@ Go to Authentication → URL Configuration and set:
 ### 3. Email Templates (Optional)
 
 Customize the email templates under Authentication → Email Templates:
+
 - Confirm signup
 - Reset password
 - Magic link

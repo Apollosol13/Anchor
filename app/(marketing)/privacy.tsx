@@ -1,8 +1,21 @@
-import React from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import { Link } from 'expo-router';
+import React from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
+import { Link } from "expo-router";
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -25,7 +38,7 @@ function Li({ children }: { children: React.ReactNode }) {
 }
 
 export default function PrivacyPage() {
-  if (Platform.OS !== 'web') return null;
+  if (Platform.OS !== "web") return null;
 
   return (
     <ScrollView style={styles.container}>
@@ -46,8 +59,18 @@ export default function PrivacyPage() {
         </View>
 
         <Section title="Introduction">
-          <P>Welcome to Anchor ("we," "our," or "us"). We are committed to protecting your privacy and ensuring you have a positive experience using our mobile application and services. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use the Anchor Bible app (the "App").</P>
-          <P>Please read this Privacy Policy carefully. By using the App, you agree to the collection and use of information in accordance with this policy.</P>
+          <P>
+            Welcome to Anchor ("we," "our," or "us"). We are committed to
+            protecting your privacy and ensuring you have a positive experience
+            using our mobile application and services. This Privacy Policy
+            explains how we collect, use, disclose, and safeguard your
+            information when you use the Anchor Bible app (the "App").
+          </P>
+          <P>
+            Please read this Privacy Policy carefully. By using the App, you
+            agree to the collection and use of information in accordance with
+            this policy.
+          </P>
         </Section>
 
         <Section title="Information We Collect">
@@ -91,7 +114,12 @@ export default function PrivacyPage() {
         </Section>
 
         <Section title="Data Storage and Security">
-          <P>Your data is securely stored using Neon's PostgreSQL infrastructure. Data is encrypted in transit (HTTPS/TLS) and at rest. We implement secure authentication, access controls, and regular security practices.</P>
+          <P>
+            Your data is securely stored using Neon's PostgreSQL infrastructure.
+            Data is encrypted in transit (HTTPS/TLS) and at rest. We implement
+            secure authentication, access controls, and regular security
+            practices.
+          </P>
           <Li>Active Accounts: Data retained while your account is active</Li>
           <Li>Deleted Accounts: Data permanently deleted within 30 days</Li>
         </Section>
@@ -105,11 +133,20 @@ export default function PrivacyPage() {
         </Section>
 
         <Section title="Children's Privacy">
-          <P>Anchor is intended for users of all ages. We do not knowingly collect personal information from children under 13 without parental consent. If you believe your child has provided us with personal information, please contact us.</P>
+          <P>
+            Anchor is intended for users of all ages. We do not knowingly
+            collect personal information from children under 13 without parental
+            consent. If you believe your child has provided us with personal
+            information, please contact us.
+          </P>
         </Section>
 
         <Section title="Changes to This Privacy Policy">
-          <P>We may update this Privacy Policy from time to time. We will notify you of changes by posting the new policy in the App and updating the "Last Updated" date.</P>
+          <P>
+            We may update this Privacy Policy from time to time. We will notify
+            you of changes by posting the new policy in the App and updating the
+            "Last Updated" date.
+          </P>
         </Section>
 
         <Section title="Contact Us">
@@ -119,61 +156,87 @@ export default function PrivacyPage() {
         </Section>
 
         <View style={styles.footerInfo}>
-          <Text style={styles.footerInfoText}>Effective Date: January 29, 2026</Text>
+          <Text style={styles.footerInfoText}>
+            Effective Date: January 29, 2026
+          </Text>
         </View>
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.copyright}>© 2026 Anchor Bible App. All rights reserved.</Text>
+        <Text style={styles.copyright}>
+          © 2026 Anchor Bible App. All rights reserved.
+        </Text>
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8f9fa' },
+  container: { flex: 1, backgroundColor: "#f8f9fa" },
   header: {
-    backgroundColor: '#000000',
+    backgroundColor: "#000000",
     padding: 48,
-    alignItems: 'center',
+    alignItems: "center",
   },
-  headerTitle: { fontSize: 40, fontWeight: '700', color: '#ffffff', marginBottom: 8 },
-  headerSub: { fontSize: 18, color: '#9ca3af' },
-  content: { maxWidth: 900, alignSelf: 'center', width: '100%', padding: 32, backgroundColor: '#ffffff' },
+  headerTitle: {
+    fontSize: 40,
+    fontWeight: "700",
+    color: "#ffffff",
+    marginBottom: 8,
+  },
+  headerSub: { fontSize: 18, color: "#9ca3af" },
+  content: {
+    maxWidth: 900,
+    alignSelf: "center",
+    width: "100%",
+    padding: 32,
+    backgroundColor: "#ffffff",
+  },
   backLink: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: "#1a1a1a",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 6,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     marginBottom: 24,
   },
-  backLinkText: { color: '#ffffff', fontWeight: '600' },
+  backLinkText: { color: "#ffffff", fontWeight: "600" },
   updated: {
-    backgroundColor: '#f7fafc',
+    backgroundColor: "#f7fafc",
     borderLeftWidth: 4,
-    borderLeftColor: '#1a1a1a',
+    borderLeftColor: "#1a1a1a",
     padding: 16,
     marginBottom: 32,
   },
-  updatedText: { fontWeight: '600', color: '#4a5568' },
+  updatedText: { fontWeight: "600", color: "#4a5568" },
   section: { marginBottom: 32 },
   sectionTitle: {
     fontSize: 28,
-    fontWeight: '700',
-    color: '#2d3748',
+    fontWeight: "700",
+    color: "#2d3748",
     marginBottom: 16,
     paddingBottom: 8,
     borderBottomWidth: 2,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: "#e2e8f0",
   },
-  h3: { fontSize: 20, fontWeight: '600', color: '#4a5568', marginTop: 20, marginBottom: 8 },
-  p: { fontSize: 16, color: '#4a5568', lineHeight: 26, marginBottom: 12 },
-  li: { flexDirection: 'row', marginBottom: 8, paddingLeft: 8 },
-  bullet: { color: '#4a5568', marginRight: 8, fontSize: 16 },
-  liText: { flex: 1, fontSize: 16, color: '#4a5568', lineHeight: 24 },
-  footerInfo: { alignItems: 'center', paddingTop: 32, borderTopWidth: 2, borderTopColor: '#e2e8f0' },
-  footerInfoText: { color: '#718096', fontSize: 14 },
-  footer: { backgroundColor: '#2d3748', padding: 32, alignItems: 'center' },
-  copyright: { color: '#ffffff', fontSize: 14 },
+  h3: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#4a5568",
+    marginTop: 20,
+    marginBottom: 8,
+  },
+  p: { fontSize: 16, color: "#4a5568", lineHeight: 26, marginBottom: 12 },
+  li: { flexDirection: "row", marginBottom: 8, paddingLeft: 8 },
+  bullet: { color: "#4a5568", marginRight: 8, fontSize: 16 },
+  liText: { flex: 1, fontSize: 16, color: "#4a5568", lineHeight: 24 },
+  footerInfo: {
+    alignItems: "center",
+    paddingTop: 32,
+    borderTopWidth: 2,
+    borderTopColor: "#e2e8f0",
+  },
+  footerInfoText: { color: "#718096", fontSize: 14 },
+  footer: { backgroundColor: "#2d3748", padding: 32, alignItems: "center" },
+  copyright: { color: "#ffffff", fontSize: 14 },
 });

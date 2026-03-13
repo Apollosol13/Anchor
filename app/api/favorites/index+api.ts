@@ -1,6 +1,6 @@
-import { checkRateLimit, error, json, requireSession } from '@/lib/api-helpers';
-import { db } from '@/server/db';
-import { favorites } from '@/server/db/schema';
+import { checkRateLimit, error, json, requireSession } from "@/lib/api-helpers";
+import { db } from "@/server/db";
+import { favorites } from "@/server/db/schema";
 
 export async function POST(request: Request) {
   try {
@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     const { book, chapter, verse, version, text } = body;
 
     if (!book || !chapter || !verse || !version || !text) {
-      return error('Missing required fields', 400);
+      return error("Missing required fields", 400);
     }
 
     try {
@@ -28,14 +28,14 @@ export async function POST(request: Request) {
 
       return json(favorite, 201);
     } catch (err: any) {
-      if (err.code === '23505') {
-        return error('Verse already in favorites', 409);
+      if (err.code === "23505") {
+        return error("Verse already in favorites", 409);
       }
       throw err;
     }
   } catch (err) {
     if (err instanceof Response) return err;
-    console.error('Error adding favorite:', err);
-    return error('Failed to add favorite');
+    console.error("Error adding favorite:", err);
+    return error("Failed to add favorite");
   }
 }

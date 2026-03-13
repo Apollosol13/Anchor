@@ -4,11 +4,11 @@
 
 Anchor was originally split across 3 projects:
 
-| Project | Stack | Hosted on | Status |
-|---|---|---|---|
-| `backend/` | Express + Supabase + node-cron | Railway | **Archived** → `_archive/backend/` |
-| `frontend/` | Expo + Supabase JS + Axios | EAS | **Merged into root** |
-| `anchrapp-web/` | Static HTML | Netlify | **Archived** → `_archive/anchrapp-web/` |
+| Project         | Stack                          | Hosted on | Status                                  |
+| --------------- | ------------------------------ | --------- | --------------------------------------- |
+| `backend/`      | Express + Supabase + node-cron | Railway   | **Archived** → `_archive/backend/`      |
+| `frontend/`     | Expo + Supabase JS + Axios     | EAS       | **Merged into root**                    |
+| `anchrapp-web/` | Static HTML                    | Netlify   | **Archived** → `_archive/anchrapp-web/` |
 
 It's now a **single Expo Router project** at root with:
 
@@ -80,6 +80,7 @@ Anchor/
 ## What's Done
 
 ### Database (Neon + Drizzle)
+
 - [x] `server/db/schema.ts` — all 15 tables defined (4 Better Auth + 11 app)
 - [x] `server/db/index.ts` — Neon HTTP connection
 - [x] `drizzle.config.ts` — Drizzle Kit config
@@ -88,6 +89,7 @@ Anchor/
 - [x] `increment_ai_chat_usage` / `get_ai_chat_usage` RPCs replaced with `onConflictDoUpdate`
 
 ### Auth (Better Auth)
+
 - [x] `lib/auth.ts` — server config with Drizzle adapter + Expo plugin
 - [x] `lib/auth-client.ts` — client with `expoClient`, SecureStore on native, localStorage on web
 - [x] `app/api/auth/[...all]+api.ts` — catch-all handler
@@ -95,6 +97,7 @@ Anchor/
 - [x] `app/_layout.tsx` — protected route logic with session gating
 
 ### API Routes (all backend endpoints ported)
+
 - [x] Verses: verse-of-day, chapter, search, reference, versions
 - [x] AI: explain, related, study-questions (with per-user daily rate limits)
 - [x] Images: presets (list, create, delete), random
@@ -105,6 +108,7 @@ Anchor/
 - [x] Presigned upload route (R2)
 
 ### Notifications
+
 - [x] `server/services/notificationService.ts` — consolidated service with:
   - `sendToUser()` — core push via expo-server-sdk
   - `sendTestNotification()` — test wrapper
@@ -117,16 +121,19 @@ Anchor/
 - [x] Preferences API auto-creates defaults on first access (so workflow discovers new users)
 
 ### Rate Limiting
+
 - [x] Global: Upstash Redis sliding window (100 req / 15 min per IP)
 - [x] AI: per-user daily limits (10 free / 100 pro) via `ai_chat_usage` table
 
 ### Web (replaces anchrapp-web)
+
 - [x] `app/(marketing)/index.tsx` — landing page
 - [x] `app/(marketing)/privacy.tsx` — privacy policy
 - [x] `app/(marketing)/terms.tsx` — terms of service
 - [x] `public/.well-known/` — Apple app site association + Android asset links
 
 ### Frontend Updates
+
 - [x] Supabase JS removed entirely
 - [x] Axios removed — using native `fetch()` with platform-aware base URL
 - [x] `lib/api.ts` — typed API client for all endpoints
@@ -137,6 +144,7 @@ Anchor/
 - [x] All `response.data` unwrapped (fetch returns data directly, not axios wrapper)
 
 ### Environment
+
 - [x] dotenv hierarchy: `.env` → `.env.development` → `.env.development.local`
 - [x] Secrets only in `.local` files (gitignored)
 - [x] Non-secret URLs in committed env files
@@ -179,15 +187,15 @@ Anchor/
 
 ## Architecture Decisions
 
-| Decision | Rationale |
-|---|---|
-| Neon over Supabase Postgres | Serverless HTTP driver, no connection pooling needed, works in Expo API Routes |
-| Better Auth over Supabase Auth | Framework-agnostic, Drizzle adapter, Expo plugin for native token storage |
-| Expo API Routes over Express | One project, one deploy. No separate server to maintain |
-| Upstash Workflow over node-cron | Durable steps with retries, parallel fan-out, no long-running process needed |
-| Upstash Redis over in-memory rate limiting | Survives serverless cold starts, shared across instances |
-| Cloudflare R2 over Supabase Storage | S3-compatible, zero egress fees, presigned uploads for client-side direct upload |
-| `@/` path alias → root | Single flat import convention, `@/server/db`, `@/lib`, `@/server/services` |
+| Decision                                   | Rationale                                                                        |
+| ------------------------------------------ | -------------------------------------------------------------------------------- |
+| Neon over Supabase Postgres                | Serverless HTTP driver, no connection pooling needed, works in Expo API Routes   |
+| Better Auth over Supabase Auth             | Framework-agnostic, Drizzle adapter, Expo plugin for native token storage        |
+| Expo API Routes over Express               | One project, one deploy. No separate server to maintain                          |
+| Upstash Workflow over node-cron            | Durable steps with retries, parallel fan-out, no long-running process needed     |
+| Upstash Redis over in-memory rate limiting | Survives serverless cold starts, shared across instances                         |
+| Cloudflare R2 over Supabase Storage        | S3-compatible, zero egress fees, presigned uploads for client-side direct upload |
+| `@/` path alias → root                     | Single flat import convention, `@/server/db`, `@/lib`, `@/server/services`       |
 
 ## Deployment Target
 

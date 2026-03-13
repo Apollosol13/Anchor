@@ -3,6 +3,7 @@
 ## ✅ What's Been Added
 
 ### 1. **Notification Service** (`src/services/notificationService.ts`)
+
 - Sends push notifications via Expo Push API
 - Handles daily verse notifications
 - Chapter completion notifications
@@ -10,16 +11,19 @@
 - Test notifications for development
 
 ### 2. **Notification Routes** (`src/routes/notifications.ts`)
+
 - `POST /api/notifications/send-daily-verse` - Send daily verse to users
 - `POST /api/notifications/chapter-completion` - Chapter completion notification
 - `POST /api/notifications/streak-reminder` - Reading streak reminder
 - `POST /api/notifications/test` - Test notification
 
 ### 3. **Updated Server** (`src/server.ts`)
+
 - Added notifications router
 - Integrated with existing Express app
 
 ### 4. **Package Updated** (`package.json`)
+
 - Added `expo-server-sdk` for sending push notifications
 
 ---
@@ -27,25 +31,31 @@
 ## 🚀 Setup Instructions
 
 ### Step 1: Install Dependencies
+
 ```bash
 cd /Users/brennenstudenc/Desktop/Anchor/backend
 npm install
 ```
 
 ### Step 2: Run Database Schema
+
 Go to Supabase SQL Editor and run:
+
 ```sql
 -- File: backend/push-notifications-schema.sql
 -- Creates push_tokens and notification_preferences tables
 ```
 
 ### Step 3: Start Backend
+
 ```bash
 npm run dev
 ```
 
 ### Step 4: Test Notifications
+
 Test that notifications work:
+
 ```bash
 curl -X POST http://localhost:3001/api/notifications/test \
   -H "Content-Type: application/json" \
@@ -61,23 +71,27 @@ You need to call `/api/notifications/send-daily-verse` **every minute** to check
 ### Option 1: Vercel Cron (Recommended for Production)
 
 Create `vercel.json`:
+
 ```json
 {
-  "crons": [{
-    "path": "/api/notifications/send-daily-verse",
-    "schedule": "* * * * *"
-  }]
+  "crons": [
+    {
+      "path": "/api/notifications/send-daily-verse",
+      "schedule": "* * * * *"
+    }
+  ]
 }
 ```
 
 ### Option 2: GitHub Actions (Free)
 
 Create `.github/workflows/daily-notifications.yml`:
+
 ```yaml
 name: Daily Notifications
 on:
   schedule:
-    - cron: '* * * * *'  # Every minute
+    - cron: "* * * * *" # Every minute
   workflow_dispatch:
 
 jobs:
@@ -92,6 +106,7 @@ jobs:
 ### Option 3: Supabase Edge Function
 
 Create Supabase Edge Function with pg_cron:
+
 ```sql
 SELECT cron.schedule(
   'send-daily-verse',
@@ -106,6 +121,7 @@ SELECT cron.schedule(
 ```
 
 ### Option 4: EasyCron (Simple SaaS)
+
 1. Sign up at https://www.easycron.com/
 2. Create cron job:
    - URL: `https://your-api.com/api/notifications/send-daily-verse`
@@ -117,6 +133,7 @@ SELECT cron.schedule(
 ## 📱 How It Works
 
 ### Daily Verse Flow:
+
 1. Cron job calls `/api/notifications/send-daily-verse` every minute
 2. Backend checks current time (e.g., "09:00")
 3. Queries users with `daily_verse_enabled: true` and `daily_verse_time: "09:00"`
@@ -125,11 +142,13 @@ SELECT cron.schedule(
 6. Users receive "Your daily verse is ready! 📖"
 
 ### Chapter Completion Flow:
+
 1. Frontend calls `/api/notifications/chapter-completion` when audio finishes
 2. Backend sends notification to that user
 3. User receives "Great job finishing Romans 8! 🎉"
 
 ### Streak Reminder Flow:
+
 1. Your app tracks last reading time
 2. After 20 hours, calls `/api/notifications/streak-reminder`
 3. User receives "Don't break your 7-day streak! 🔥"
@@ -139,6 +158,7 @@ SELECT cron.schedule(
 ## 🧪 Testing
 
 ### Test Notification (Development)
+
 ```bash
 curl -X POST http://localhost:3001/api/notifications/test \
   -H "Content-Type: application/json" \
@@ -146,6 +166,7 @@ curl -X POST http://localhost:3001/api/notifications/test \
 ```
 
 ### Test Chapter Completion
+
 ```bash
 curl -X POST http://localhost:3001/api/notifications/chapter-completion \
   -H "Content-Type: application/json" \
@@ -157,6 +178,7 @@ curl -X POST http://localhost:3001/api/notifications/chapter-completion \
 ```
 
 ### Manually Trigger Daily Verse
+
 ```bash
 curl -X POST http://localhost:3001/api/notifications/send-daily-verse
 ```
@@ -175,6 +197,7 @@ curl -X POST http://localhost:3001/api/notifications/send-daily-verse
 ## 📊 Monitoring
 
 Check backend logs to see:
+
 - `🔔 Sending notification to user {userId}`
 - `✅ Sent chunk of X notifications`
 - `📬 Found X users to notify`
@@ -196,6 +219,7 @@ Check backend logs to see:
 ## 🆘 Troubleshooting
 
 **Notifications not working?**
+
 - Check push tokens exist in database
 - Verify user has `daily_verse_enabled: true`
 - Confirm time matches (24-hour format: "09:00")
@@ -203,6 +227,7 @@ Check backend logs to see:
 - Test on **physical device** (iOS Simulator doesn't support push)
 
 **Cron job not running?**
+
 - Verify cron schedule syntax
 - Check backend logs for requests
 - Test endpoint manually with curl

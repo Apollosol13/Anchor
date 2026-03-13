@@ -1,17 +1,40 @@
-import React from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import { Link } from 'expo-router';
+import React from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
+import { Link } from "expo-router";
 
 const features = [
-  { icon: '📖', title: 'Read the Bible', desc: 'Access the complete Bible with multiple translations.' },
-  { icon: '🎨', title: 'Create Beautiful Images', desc: 'Share verses with stunning backgrounds and designs.' },
-  { icon: '💬', title: 'AI Bible Chat', desc: 'Ask questions and explore scripture with AI assistance.' },
-  { icon: '🔖', title: 'Bookmark & Save', desc: 'Keep track of your favorite verses and passages.' },
+  {
+    icon: "📖",
+    title: "Read the Bible",
+    desc: "Access the complete Bible with multiple translations.",
+  },
+  {
+    icon: "🎨",
+    title: "Create Beautiful Images",
+    desc: "Share verses with stunning backgrounds and designs.",
+  },
+  {
+    icon: "💬",
+    title: "AI Bible Chat",
+    desc: "Ask questions and explore scripture with AI assistance.",
+  },
+  {
+    icon: "🔖",
+    title: "Bookmark & Save",
+    desc: "Keep track of your favorite verses and passages.",
+  },
 ];
 
 export default function LandingPage() {
   // On native, redirect to app tabs
-  if (Platform.OS !== 'web') {
+  if (Platform.OS !== "web") {
     return null;
   }
 
@@ -67,15 +90,15 @@ export default function LandingPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000',
+    backgroundColor: "#000000",
   },
   content: {
-    alignItems: 'center',
+    alignItems: "center",
     padding: 24,
     paddingTop: 80,
   },
   hero: {
-    alignItems: 'center',
+    alignItems: "center",
     maxWidth: 600,
     marginBottom: 60,
   },
@@ -85,33 +108,33 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 48,
-    fontWeight: '700',
-    color: '#ffffff',
+    fontWeight: "700",
+    color: "#ffffff",
     marginBottom: 16,
   },
   subtitle: {
     fontSize: 20,
-    color: '#9ca3af',
-    textAlign: 'center',
+    color: "#9ca3af",
+    textAlign: "center",
     lineHeight: 32,
     marginBottom: 40,
   },
   badge: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: "#1a1a1a",
     paddingHorizontal: 32,
     paddingVertical: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#2a2a2a',
+    borderColor: "#2a2a2a",
   },
   badgeText: {
-    color: '#6b7280',
-    fontWeight: '600',
+    color: "#6b7280",
+    fontWeight: "600",
     fontSize: 18,
   },
   features: {
     maxWidth: 600,
-    width: '100%',
+    width: "100%",
     marginBottom: 60,
   },
   feature: {
@@ -119,39 +142,39 @@ const styles = StyleSheet.create({
   },
   featureTitle: {
     fontSize: 20,
-    fontWeight: '600',
-    color: '#ffffff',
+    fontWeight: "600",
+    color: "#ffffff",
     marginBottom: 8,
   },
   featureDesc: {
     fontSize: 16,
-    color: '#9ca3af',
+    color: "#9ca3af",
     lineHeight: 24,
   },
   footer: {
     borderTopWidth: 1,
-    borderTopColor: '#2a2a2a',
+    borderTopColor: "#2a2a2a",
     paddingTop: 40,
-    alignItems: 'center',
-    width: '100%',
+    alignItems: "center",
+    width: "100%",
   },
   footerLinks: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
     gap: 12,
     marginBottom: 16,
   },
   footerLink: {
-    color: '#9ca3af',
+    color: "#9ca3af",
     fontSize: 14,
   },
   footerSep: {
-    color: '#2a2a2a',
+    color: "#2a2a2a",
     fontSize: 14,
   },
   copyright: {
-    color: '#6b7280',
+    color: "#6b7280",
     fontSize: 14,
   },
 });

@@ -1,5 +1,5 @@
-import { json, error, requireSession, checkRateLimit } from '@/lib/api-helpers';
-import { sendTestNotification } from '@/server/services/notificationService';
+import { json, error, requireSession, checkRateLimit } from "@/lib/api-helpers";
+import { sendTestNotification } from "@/server/services/notificationService";
 
 export async function POST(request: Request) {
   try {
@@ -9,10 +9,12 @@ export async function POST(request: Request) {
 
     return json({
       success,
-      message: success ? 'Test notification sent' : 'Failed to send test notification',
+      message: success
+        ? "Test notification sent"
+        : "Failed to send test notification",
     });
   } catch (err) {
     if (err instanceof Response) return err;
-    return error('Failed to send test notification');
+    return error("Failed to send test notification");
   }
 }

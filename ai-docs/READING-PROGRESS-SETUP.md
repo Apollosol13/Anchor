@@ -7,6 +7,7 @@ Users can now **long-press chapter numbers** to mark them as complete. Completed
 ## How It Works
 
 ### User Experience
+
 1. Navigate to any Bible book (e.g., Exodus)
 2. See all chapter numbers displayed in a grid
 3. **Tap** a chapter to read it
@@ -16,6 +17,7 @@ Users can now **long-press chapter numbers** to mark them as complete. Completed
 7. Long-press again to mark as incomplete
 
 ### Visual Indicators
+
 - **Default**: Dark gray chapter button (#1a1a1a)
 - **Completed**: Green chapter button (#22c55e) with white checkmark badge
 - **Text**: White text on dark, black text on green
@@ -51,6 +53,7 @@ CREATE POLICY "Service role can do everything on reading_progress" ON reading_pr
 ### Step 2: Verify Table Creation
 
 In Supabase dashboard:
+
 1. Go to **Table Editor**
 2. Look for `reading_progress` table
 3. Verify columns: `id`, `user_id`, `book`, `chapter`, `completed_at`
@@ -67,6 +70,7 @@ In Supabase dashboard:
 ## Files Modified
 
 ### Frontend
+
 - **`frontend-new/app/book/[bookName].tsx`**
   - Added chapter completion tracking
   - Long-press gesture handling
@@ -76,6 +80,7 @@ In Supabase dashboard:
   - Loading state while fetching progress
 
 ### Backend
+
 - **`backend/supabase-schema.sql`**
   - Added `reading_progress` table schema
   - Added indexes for performance
@@ -86,21 +91,25 @@ In Supabase dashboard:
 This feature sets the foundation for:
 
 ✅ **Badges & Achievements**
+
 - "Genesis Master" - Complete all 50 chapters of Genesis
 - "Gospels Champion" - Complete Matthew, Mark, Luke, John
 - "Bible Master" - Complete all 66 books
 
 ✅ **Progress Stats**
+
 - Total chapters read
 - Books completed
 - Reading streaks
 - Progress percentage per book
 
 ✅ **Progress Bar**
+
 - Show completion percentage on book cards
 - e.g., "Genesis (45/50 chapters)"
 
 ✅ **Reading Plans**
+
 - Guided reading schedules
 - Track progress through plans
 
@@ -134,15 +143,18 @@ GET  /api/user-stats/:userId              - Get user stats
 ## Troubleshooting
 
 **Issue**: Chapters don't turn green after marking complete
+
 - **Solution**: Check Supabase table exists and has data
 - **Solution**: Verify user is signed in (check logs)
 - **Solution**: Clear app cache and restart
 
 **Issue**: Long-press doesn't work
+
 - **Solution**: Make sure you're holding for at least 0.5 seconds
 - **Solution**: Try on a real device (simulator may have issues)
 
 **Issue**: Progress not saving
+
 - **Solution**: Check Supabase RLS policies are correct
 - **Solution**: Verify user_id is being passed correctly
 - **Solution**: Check network connection

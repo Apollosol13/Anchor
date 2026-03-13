@@ -3,12 +3,14 @@
 ## ✅ What's Been Implemented
 
 ### 1. **Notification Infrastructure**
+
 - ✅ Installed `expo-notifications` and `expo-device` packages
 - ✅ Installed `@react-native-community/datetimepicker` for time selection
 - ✅ Configured iOS and Android notification capabilities in `app.config.js`
 - ✅ Added iOS background notification mode
 
 ### 2. **Notification Service** (`src/lib/notifications.ts`)
+
 - ✅ Push token registration with Expo
 - ✅ Token storage in Supabase
 - ✅ Notification preferences management
@@ -17,6 +19,7 @@
 - ✅ Reading streak reminders
 
 ### 3. **User Interface**
+
 - ✅ Notification Settings screen (`app/notification-settings.tsx`)
 - ✅ Linked from Profile → Notifications
 - ✅ Time picker for daily verse reminder
@@ -24,11 +27,13 @@
 - ✅ Real-time preference saving
 
 ### 4. **App Integration**
+
 - ✅ Auto-initialize notifications on app start (when user is logged in)
 - ✅ Chapter completion triggers notification
 - ✅ Notification preferences synced with Supabase
 
 ### 5. **Database Schema** (`backend/push-notifications-schema.sql`)
+
 - ✅ `push_tokens` table for Expo push tokens
 - ✅ `notification_preferences` table for user settings
 - ✅ Row Level Security (RLS) policies
@@ -53,6 +58,7 @@ npx expo start
 ```
 
 **What to Test:**
+
 1. ✅ Open the app → notifications should auto-initialize
 2. ✅ Go to Profile → Notifications
 3. ✅ Toggle notification settings
@@ -66,16 +72,19 @@ npx expo start
 When you run `eas build`, you'll need to provide the APNs key:
 
 **You already have:**
+
 - ✅ Key ID: `777PV46Y3C`
 - ✅ Team ID: `6YZSFD7L5N`
 - ✅ `.p8` file: `/Users/brennenstudenc/Desktop/AuthKey_777PV46Y3C.p8`
 
 **During build:**
+
 ```bash
 eas build --platform ios --profile production
 ```
 
 EAS will ask if you want to upload credentials. Select **"Use existing APNs Key"** and provide:
+
 - Key ID: `777PV46Y3C`
 - Path to `.p8` file: `/Users/brennenstudenc/Desktop/AuthKey_777PV46Y3C.p8`
 
@@ -84,17 +93,20 @@ EAS will ask if you want to upload credentials. Select **"Use existing APNs Key"
 ## 🎯 Notification Features
 
 ### **1. Daily Verse Reminder** 📖
+
 - Default: 9:00 AM
 - Customizable time
 - Notification: "Your Daily Verse is Ready"
 - Opens app to the home screen
 
 ### **2. Chapter Completion** 🎉
+
 - Triggers when audio finishes
 - Notification: "Great job finishing {Book} {Chapter}!"
 - Celebrates user progress
 
 ### **3. Reading Streak Reminder** 🔥
+
 - Triggers after 20 hours of no reading
 - Notification: "Don't break your X-day streak!"
 - Encourages consistency
@@ -147,6 +159,7 @@ EAS will ask if you want to upload credentials. Select **"Use existing APNs Key"
 ## 📊 Database Tables
 
 ### `push_tokens`
+
 ```sql
 - id: UUID (primary key)
 - user_id: UUID (references auth.users)
@@ -157,6 +170,7 @@ EAS will ask if you want to upload credentials. Select **"Use existing APNs Key"
 ```
 
 ### `notification_preferences`
+
 ```sql
 - id: UUID (primary key)
 - user_id: UUID (references auth.users)
@@ -173,6 +187,7 @@ EAS will ask if you want to upload credentials. Select **"Use existing APNs Key"
 ## 🎨 UI/UX
 
 **Notification Settings Screen:**
+
 - Clean, modern design matching app theme
 - Clear section headers with descriptions
 - Toggle switches with green active state
@@ -206,6 +221,7 @@ EAS will ask if you want to upload credentials. Select **"Use existing APNs Key"
 ## ❓ Troubleshooting
 
 **Notifications not working?**
+
 1. Check device settings → Anchor → Notifications (must be enabled)
 2. Verify tables exist in Supabase
 3. Check console logs for errors
@@ -213,10 +229,12 @@ EAS will ask if you want to upload credentials. Select **"Use existing APNs Key"
 5. Verify APNs key is valid and not revoked
 
 **Time picker not working?**
+
 - iOS: Should show a spinner wheel
 - Android: Should show a dialog
 
 **Preferences not saving?**
+
 - Check Supabase RLS policies
 - Verify user is logged in
 - Check console logs for errors
@@ -226,6 +244,7 @@ EAS will ask if you want to upload credentials. Select **"Use existing APNs Key"
 ## 📞 Support
 
 If you run into issues:
+
 1. Check console logs (`console.log`, `console.error`)
 2. Verify Supabase tables and RLS policies
 3. Test on a real device (not simulator)
