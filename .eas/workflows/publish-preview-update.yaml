@@ -1,0 +1,14 @@
+# Preview OTA updates for development/PR branches
+# Triggered on push to any branch except main (which is reserved for production releases)
+
+name: Publish preview update
+
+on:
+  push:
+    branches: ["*", "!main"]
+jobs:
+  publish_preview_update:
+    name: Publish preview update
+    type: update
+    params:
+      branch: ${{ github.ref_name || 'test' }}
