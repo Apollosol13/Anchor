@@ -159,53 +159,68 @@ export class BibleService {
       const bibleId = this.getVersionId(version);
       const bookCode = this.getBookCode(bookName);
       const chapterId = `${bookCode}.${chapter}`;
-      
-      // First, get the list of verse IDs
-      const versesListResponse = await axios.get(
-        `${this.baseUrl}/bibles/${bibleId}/chapters/${chapterId}/verses`,
+
+      // Fetch entire chapter content in one request to avoid per-verse truncation
+      const chapterResponse = await axios.get(
+        `${this.baseUrl}/bibles/${bibleId}/chapters/${chapterId}`,
         {
-          headers: { 'api-key': this.apiKey }
+          headers: { 'api-key': this.apiKey },
+          params: { 'content-type': 'html' }
         }
       );
 
-      console.log(`📖 Found ${versesListResponse.data.data.length} verses for ${bookName} ${chapter}`);
+      const html = chapterResponse.data.data.content || '';
 
-      // Now fetch each verse with its actual text content
-      const versePromises = versesListResponse.data.data.map(async (verseMetadata: any) => {
-        const verseId = verseMetadata.id;
-        const verseNumber = parseInt(verseId.split('.').pop() || '0');
-        
-        try {
-          const verseResponse = await axios.get(
-            `${this.baseUrl}/bibles/${bibleId}/verses/${verseId}`,
-            {
-              headers: { 'api-key': this.apiKey },
-              params: { 'content-type': 'html' }
-            }
-          );
-          
-          let text = verseResponse.data.data.content || '';
-          
-          // Strip HTML tags to get plain text
-          text = text.replace(/<[^>]*>/g, '');
-          // Remove verse number brackets like [1], [2], etc.
-          text = text.replace(/\[\d+\]/g, '').trim();
-          // Collapse multiple spaces
-          text = text.replace(/\s+/g, ' ').trim();
-          
-          return {
-            number: verseNumber,
-            text: text
-          };
-        } catch (error) {
-          console.warn(`⚠️ Failed to fetch verse ${verseId}:`, error);
-          return null;
+      // Split on verse markers: <span data-number="N" ...> or class="v" patterns
+      // API.Bible wraps each verse number in a span with data-number attribute
+      const verseParts = html.split(/<span[^>]*data-number="(\d+)"[^>]*class="v"[^>]*>\d+<\/span>/);
+
+      const verses: { number: number; text: string }[] = [];
+
+      // verseParts alternates: [before, verseNum, text, verseNum, text, ...]
+      for (let i = 1; i < verseParts.length; i += 2) {
+        const verseNumber = parseInt(verseParts[i]);
+        const rawText = verseParts[i + 1] || '';
+
+        let text = rawText
+          .replace(/<[^>]*>/g, '')   // strip HTML tags
+          .replace(/\[\d+\]/g, '')   // remove bracketed numbers
+          .replace(/\s+/g, ' ')      // collapse whitespace
+          .trim();
+
+        if (verseNumber > 0 && text) {
+          verses.push({ number: verseNumber, text });
         }
-      });
+      }
 
-      // Wait for all verses to be fetched
-      const versesResults = await Promise.all(versePromises);
-      const verses = versesResults.filter(v => v !== null);
+      // Fallback: if splitting didn't work, fetch verses individually
+      if (verses.length === 0) {
+        console.log(`⚠️ Chapter split produced 0 verses, falling back to individual fetch`);
+        const versesListResponse = await axios.get(
+          `${this.baseUrl}/bibles/${bibleId}/chapters/${chapterId}/verses`,
+          { headers: { 'api-key': this.apiKey } }
+        );
+
+        const versePromises = versesListResponse.data.data.map(async (verseMetadata: any) => {
+          const verseId = verseMetadata.id;
+          const verseNumber = parseInt(verseId.split('.').pop() || '0');
+          try {
+            const verseResponse = await axios.get(
+              `${this.baseUrl}/bibles/${bibleId}/verses/${verseId}`,
+              {
+                headers: { 'api-key': this.apiKey },
+                params: { 'content-type': 'html' }
+              }
+            );
+            let text = verseResponse.data.data.content || '';
+            text = text.replace(/<[^>]*>/g, '').replace(/\[\d+\]/g, '').replace(/^\d+\s*/, '').replace(/\s+/g, ' ').trim();
+            return { number: verseNumber, text };
+          } catch { return null; }
+        });
+
+        const results = await Promise.all(versePromises);
+        verses.push(...results.filter((v): v is { number: number; text: string } => v !== null));
+      }
 
       console.log(`✅ Parsed ${verses.length} verses for ${bookName} ${chapter}`);
 
@@ -236,7 +251,7 @@ export class BibleService {
       );
 
       const data = response.data.data;
-      let text = (data.content || '').replace(/<[^>]*>/g, '').replace(/\[\d+\]/g, '').replace(/\s+/g, ' ').trim();
+      let text = (data.content || '').replace(/<[^>]*>/g, '').replace(/\[\d+\]/g, '').replace(/^\d+\s*/, '').replace(/\s+/g, ' ').trim();
       
       return {
         text,
@@ -274,7 +289,7 @@ export class BibleService {
       if (!Array.isArray(verses)) return [];
 
       return verses.map((v: any) => ({
-        text: (v.text || '').replace(/<[^>]*>/g, '').replace(/\[\d+\]/g, '').replace(/\s+/g, ' ').trim(),
+        text: (v.text || '').replace(/<[^>]*>/g, '').replace(/\[\d+\]/g, '').replace(/^\d+\s*/, '').replace(/\s+/g, ' ').trim(),
         reference: v.reference || '',
         book: (v.reference || '').split(' ')[0],
         chapter: parseInt((v.reference || '').match(/\d+/)?.[0] || '0'),
