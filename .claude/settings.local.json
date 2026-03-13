@@ -4,7 +4,30 @@
       "Bash(npx expo install react-native-svg)",
       "Bash(npm install)",
       "Bash(git ls-tree HEAD frontend-new/)",
-      "Bash(git submodule update --init --recursive)"
+      "Bash(git submodule update --init --recursive)",
+      "Bash(find /Users/alexlane/development/projects/Anchor -name \".env*\" -o -name \"*.env\" 2>/dev/null | head -20)",
+      "Bash(grep -r \"SUPABASE\\\\|VITE\" /Users/alexlane/development/projects/Anchor/frontend --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.json\" 2>/dev/null | grep -E \"env|SUPABASE|VITE\" | head -20)",
+      "Bash(cat /Users/alexlane/development/projects/Anchor/backend/migrations/*.sql | grep -A 15 \"chapter_audio\")",
+      "Bash(grep -r \"chapter_audio\" /Users/alexlane/development/projects/Anchor --include=\"*.sql\" --include=\"*.ts\" --include=\"*.tsx\" 2>/dev/null | head -20)",
+      "WebFetch(domain:docs.expo.dev)",
+      "Bash(ls /Users/alexlane/development/projects/Anchor/frontend/app.json 2>/dev/null || ls /Users/alexlane/development/projects/Anchor/frontend/app.config.* 2>/dev/null || echo \"no app config found\")",
+      "Bash(find /Users/alexlane/development/projects/Anchor -type f \\\\\\( -name \"supabase.json\" -o -name \"*.env*\" \\\\\\) 2>/dev/null | head -10)",
+      "Bash(cd /Users/alexlane/development/projects/Anchor/frontend && npx expo install @neondatabase/serverless drizzle-orm expo-notifications expo-device expo-constants 2>&1 | tail -20)",
+      "Bash(npm i:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npx expo:*)",
+      "Bash(ls /Users/alexlane/development/projects/Anchor/frontend/node_modules/@better-auth/expo/dist/ 2>/dev/null && head -100 /Users/alexlane/development/projects/Anchor/frontend/node_modules/@better-auth/expo/dist/index.d.ts 2>/dev/null || echo \"checking alternative paths...\" && find /Users/alexlane/development/projects/Anchor/frontend/node_modules/@better-auth/expo -name \"*.d.ts\" -maxdepth 3 2>/dev/null | head -5)",
+      "WebFetch(domain:upstash.com)",
+      "Bash(echo \"=== app/ ===\" && find /Users/alexlane/development/projects/Anchor/app -name \"*.ts\" -o -name \"*.tsx\" | sort && echo \"=== server/ ===\" && find /Users/alexlane/development/projects/Anchor/server -name \"*.ts\" | sort && echo \"=== services/ ===\" && find /Users/alexlane/development/projects/Anchor/services -name \"*.ts\" | sort && echo \"=== lib/ ===\" && find /Users/alexlane/development/projects/Anchor/lib -name \"*.ts\" | sort && echo \"=== components/ ===\" && find /Users/alexlane/development/projects/Anchor/components -name \"*.tsx\" | sort && echo \"=== src/ ===\" && find /Users/alexlane/development/projects/Anchor/src -name \"*.ts\" -o -name \"*.tsx\" 2>/dev/null | sort && echo \"=== frontend/ ===\" && ls /Users/alexlane/development/projects/Anchor/frontend/ 2>/dev/null)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(echo \"=== Tracked \\(committed\\) ===\" && for f in .env .env.development .env.production; do git check-ignore \"$f\" 2>/dev/null && echo \"$f IGNORED\" || echo \"$f TRACKED\"; done && echo \"=== Ignored \\(secrets\\) ===\" && for f in .env.local .env.development.local .env.production.local; do git check-ignore \"$f\" 2>/dev/null && echo \"$f IGNORED\" || echo \"$f TRACKED\"; done)",
+      "Bash(bun add:*)",
+      "Bash(grep -r \"toWebHandler\\\\|toFetchHandler\\\\|export.*handler\" /Users/alexlane/development/projects/Anchor/node_modules/better-auth/dist/ --include=\"*.d.mts\" -l 2>/dev/null | head -5)",
+      "Bash(grep \"handler\" /Users/alexlane/development/projects/Anchor/node_modules/@better-auth/core/dist/auth.d.mts 2>/dev/null || find /Users/alexlane/development/projects/Anchor/node_modules/@better-auth/core/dist -name \"auth*\" | head -5)",
+      "Bash(node -e \"const a = require\\('@better-auth/core'\\); const keys = Object.keys\\(a\\).filter\\(k => k.toLowerCase\\(\\).includes\\('auth'\\)\\); console.log\\(keys.slice\\(0,20\\)\\)\" 2>&1 | head -5; node -e \"const {betterAuth} = require\\('better-auth'\\); const a = betterAuth\\({database:{type:'memory'}}\\); console.log\\(typeof a.handler, Object.keys\\(a\\).filter\\(k=>k.includes\\('handler'\\)\\)\\)\" 2>&1 | head -5)",
+      "Bash(node -e \"const {betterAuth} = require\\('better-auth'\\); const a = betterAuth\\({database:{type:'memory'}}\\); console.log\\(a.handler.toString\\(\\).slice\\(0, 200\\)\\)\" 2>&1 | head -5)",
+      "Bash(grep \"expo-file-system\" /Users/alexlane/development/projects/Anchor/node_modules/expo-file-system/package.json 2>/dev/null | head -3; node -e \"try{const fs=require\\('expo-file-system'\\);console.log\\(Object.keys\\(fs\\).filter\\(k=>k.includes\\('document'\\)||k.includes\\('Document'\\)\\)\\)}catch\\(e\\){console.log\\(e.message\\)}\" 2>&1 | head -3)",
+      "Bash(find /Users/alexlane/development/projects/Anchor/node_modules/expo-file-system -name \"*.d.ts\" | head -5 && grep -r \"documentDirectory\" /Users/alexlane/development/projects/Anchor/node_modules/expo-file-system --include=\"*.d.ts\" 2>/dev/null | head -5 || grep -r \"documentDirectory\" /Users/alexlane/development/projects/Anchor/node_modules/expo-file-system --include=\"*.ts\" 2>/dev/null | head -5)"
     ]
   }
 }

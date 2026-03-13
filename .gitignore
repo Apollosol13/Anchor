@@ -4,16 +4,14 @@ package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
-# Environment variables
-.env
+# Environment variables — local overrides (secrets, never commit)
 .env.local
-.env.production
-.env.development
+.env.development.local
+.env.production.local
 
 # Build outputs
 dist/
 build/
-*.local
 
 # Logs
 *.log

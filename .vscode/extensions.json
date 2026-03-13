@@ -1,0 +1,16 @@
+{
+    "recommendations": [
+        "expo.vscode-expo-tools",
+        "stripe.vscode-stripe",
+        "oxc.oxc-vscode",
+        "databricks.neon-local-connect",
+        "oven.bun-vscode",
+        "github.vscode-github-actions",
+        "christian-kohler.npm-intellisense",
+        "swiftlang.swift-vscode",
+        "bradlc.vscode-tailwindcss",
+        "Vercel.turbo-vsc",
+        "vscode-icons-team.vscode-icons",
+        "redhat.vscode-yaml"
+    ]
+}
