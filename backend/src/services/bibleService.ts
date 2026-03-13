@@ -180,14 +180,18 @@ export class BibleService {
             `${this.baseUrl}/bibles/${bibleId}/verses/${verseId}`,
             {
               headers: { 'api-key': this.apiKey },
-              params: { 'content-type': 'text' }
+              params: { 'content-type': 'html' }
             }
           );
           
           let text = verseResponse.data.data.content || '';
           
-          // Remove verse number brackets like [1], [2], etc. from the beginning
-          text = text.replace(/^\[\d+\]\s*/, '').trim();
+          // Strip HTML tags to get plain text
+          text = text.replace(/<[^>]*>/g, '');
+          // Remove verse number brackets like [1], [2], etc.
+          text = text.replace(/\[\d+\]/g, '').trim();
+          // Collapse multiple spaces
+          text = text.replace(/\s+/g, ' ').trim();
           
           return {
             number: verseNumber,
@@ -227,14 +231,15 @@ export class BibleService {
         `${this.baseUrl}/bibles/${bibleId}/verses/${reference}`,
         {
           headers: { 'api-key': this.apiKey },
-          params: { 'content-type': 'text' }
+          params: { 'content-type': 'html' }
         }
       );
 
       const data = response.data.data;
+      let text = (data.content || '').replace(/<[^>]*>/g, '').replace(/\[\d+\]/g, '').replace(/\s+/g, ' ').trim();
       
       return {
-        text: data.content.replace(/<[^>]*>/g, '').trim(), // Strip HTML tags
+        text,
         reference: data.reference,
         book: data.reference.split(' ')[0],
         chapter: parseInt(data.reference.match(/\d+/)?.[0] || '0'),
@@ -260,7 +265,7 @@ export class BibleService {
           params: { 
             query,
             limit,
-            'content-type': 'text'
+            'content-type': 'html'
           }
         }
       );
@@ -269,7 +274,7 @@ export class BibleService {
       if (!Array.isArray(verses)) return [];
 
       return verses.map((v: any) => ({
-        text: (v.text || '').replace(/<[^>]*>/g, '').trim(),
+        text: (v.text || '').replace(/<[^>]*>/g, '').replace(/\[\d+\]/g, '').replace(/\s+/g, ' ').trim(),
         reference: v.reference || '',
         book: (v.reference || '').split(' ')[0],
         chapter: parseInt((v.reference || '').match(/\d+/)?.[0] || '0'),
