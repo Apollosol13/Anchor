@@ -6,6 +6,11 @@
       "sourceType": "github",
       "computedHash": "342df93f481a0dba919f372d6c7b40d2b4bf5b51dd24363aea2e5d0bae27a6fa"
     },
+    "e2e-studio-tests": {
+      "source": "supabase/supabase",
+      "sourceType": "github",
+      "computedHash": "061295414eaaa53eaf96e29866bfafdafa7bbec34fc5228261146df89434bb19"
+    },
     "expo-api-routes": {
       "source": "expo/skills",
       "sourceType": "github",
@@ -36,6 +41,21 @@
       "sourceType": "github",
       "computedHash": "6c14e4efb34a9c4759e8b959f82dec328f87dd89a022957c6737086984b9b106"
     },
+    "studio-testing": {
+      "source": "supabase/supabase",
+      "sourceType": "github",
+      "computedHash": "d3a863d97064d2f2046cfee1d79e7203b61c826d2f8d01c8765e304091863b4d"
+    },
+    "supabase-postgres-best-practices": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "computedHash": "9c87c315aed143ee3b34bec8117100f5035e0df09e6b23e1ecc772cff434c9ad"
+    },
+    "telemetry-standards": {
+      "source": "supabase/supabase",
+      "sourceType": "github",
+      "computedHash": "f6dbe95291c8fd2f0975ba92e2c3076a1fada07a5f69b9b2b2f78c9ea481e9af"
+    },
     "upgrading-expo": {
       "source": "expo/skills",
       "sourceType": "github",
@@ -45,6 +65,16 @@
       "source": "expo/skills",
       "sourceType": "github",
       "computedHash": "8eca0e229f16e3499e5dbf791a79f5a5cba1e98b4af88ca495c903930d7f1ba0"
+    },
+    "vercel-composition-patterns": {
+      "source": "supabase/supabase",
+      "sourceType": "github",
+      "computedHash": "1aa8cc5a812ffcb991f8d9528d2aefc85158cddfdf3c4a810c597f0c9c7bfc89"
+    },
+    "vitest": {
+      "source": "supabase/supabase",
+      "sourceType": "github",
+      "computedHash": "669c7275f7e1379b06b2bcfa593603aead4c983b951c7e8edbc09640aa38d0a1"
     }
   }
 }
