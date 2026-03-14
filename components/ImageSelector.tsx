@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
   ActivityIndicator,
   Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import * as ImagePicker from "expo-image-picker";
-import { Ionicons } from "@expo/vector-icons";
 import { imageApi, uploadApi } from "../lib/api";
 
 interface ImageSelectorProps {
@@ -43,10 +43,10 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
   const fetchPresets = async () => {
     setLoading(true);
     try {
-      const data = await imageApi.getPresets(
+      const response = await imageApi.getPresets(
         category === "all" ? undefined : category,
       );
-      setPresets(data || []);
+      setPresets(response || []);
     } catch (error) {
       console.error("Error fetching presets:", error);
     } finally {
@@ -76,16 +76,15 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
 
       if (!result.canceled && result.assets[0]) {
         const uri = result.assets[0].uri;
-        const filename = `${Date.now()}.jpg`;
+        const fileName = `${Date.now()}.jpg`;
 
-        // Get presigned URL from server
+        const response = await fetch(uri);
+        const blob = await response.blob();
+
         const { uploadUrl, publicUrl } = await uploadApi.getPresignedUrl(
-          filename,
+          fileName,
           "image/jpeg",
         );
-
-        // Upload directly to R2
-        const blob = await (await fetch(uri)).blob();
         await uploadApi.uploadToPresignedUrl(uploadUrl, blob, "image/jpeg");
 
         onImageSelect(publicUrl);
@@ -141,16 +140,16 @@ export const ImageSelector: React.FC<ImageSelectorProps> = ({
               key={preset.id}
               style={[
                 styles.presetCard,
-                currentImage === preset.imageUrl && styles.presetCardSelected,
+                currentImage === preset.image_url && styles.presetCardSelected,
               ]}
-              onPress={() => onImageSelect(preset.imageUrl)}
+              onPress={() => onImageSelect(preset.image_url)}
             >
               <Image
-                source={{ uri: preset.imageUrl }}
+                source={{ uri: preset.image_url }}
                 style={styles.presetImage}
                 resizeMode="cover"
               />
-              {currentImage === preset.imageUrl && (
+              {currentImage === preset.image_url && (
                 <View style={styles.selectedBadge}>
                   <Ionicons name="checkmark" size={16} color="#000000" />
                 </View>
@@ -182,7 +181,7 @@ const styles = StyleSheet.create({
     color: "#ffffff",
   },
   categoryScroll: {
-    marginBottom: 16,
+    // marginBottom: 16,
   },
   categoryContainer: {
     paddingRight: 16,

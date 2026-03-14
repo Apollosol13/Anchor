@@ -1,5 +1,5 @@
 import { checkRateLimit, error, json, requireSession } from "@/lib/api-helpers";
-import { uploadFile } from "@/lib/storage";
+import { uploadFile } from "@/server/r2";
 import { db } from "@/server/db";
 import { chapterAudio } from "@/server/db/schema";
 import { and, eq } from "drizzle-orm";

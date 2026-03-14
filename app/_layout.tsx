@@ -1,147 +1,130 @@
-import { useEffect, useRef } from "react";
-import { Stack, SplashScreen, useRouter, useSegments } from "expo-router";
-import { Platform } from "react-native";
-
-SplashScreen.preventAutoHideAsync();
+import { useFonts } from "expo-font";
+import * as Linking from "expo-linking";
 import * as Notifications from "expo-notifications";
-import * as Device from "expo-device";
-import Constants from "expo-constants";
+import { Stack, useRouter, useSegments } from "expo-router";
+import { Component, useEffect } from "react";
+import { StyleSheet, Text, View } from "react-native";
+
 import { useSession } from "@/lib/auth-client";
-import { notificationApi } from "@/lib/api";
+import { SubscriptionProvider } from "@/lib/contexts/SubscriptionContext";
+import { notificationService } from "@/lib/notifications";
 
-// Configure notification handling
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+class ErrorBoundary extends Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
 
-function useProtectedRoute() {
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error) {
+    console.error("App crashed:", error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorTitle}>Something went wrong</Text>
+          <Text style={styles.errorDetails}>
+            {this.state.error?.message || "Unknown error"}
+          </Text>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function RootLayoutNav() {
   const { data: session, isPending } = useSession();
+  const user = session?.user ?? null;
   const segments = useSegments();
   const router = useRouter();
 
+  const [fontsLoaded] = useFonts({
+    Caveat: require("../assets/fonts/Caveat.ttf"),
+  });
+
+  // Push notifications for logged-in users
   useEffect(() => {
-    if (isPending) return;
+    if (user?.id) {
+      notificationService.registerForPushNotifications().catch(() => {});
+    }
+  }, [user?.id]);
 
-    SplashScreen.hideAsync();
+  // Deep linking
+  useEffect(() => {
+    const sub = Linking.addEventListener("url", (event) => {
+      console.log("Deep link received:", event.url);
+    });
+    return () => sub.remove();
+  }, []);
 
-    const inAuthGroup = segments[0] === "sign-in" || segments[0] === "sign-up";
-    const inMarketing = segments[0] === "(marketing)";
-
-    // Allow marketing pages without auth on web only
-    if (inMarketing && Platform.OS === "web") return;
-
-    if (!session && !inAuthGroup) {
-      router.replace("/sign-in");
-    } else if (session && inAuthGroup) {
+  // Redirect signed-in users away from auth screens
+  useEffect(() => {
+    if (isPending || !segments[0]) return;
+    if (user && segments[0] === "auth") {
       router.replace("/(tabs)");
     }
-  }, [session, isPending, segments]);
-
-  return { session, isPending };
-}
-
-function usePushNotifications(isAuthenticated: boolean) {
-  const notificationListener = useRef<Notifications.EventSubscription>(null);
-  const responseListener = useRef<Notifications.EventSubscription>(null);
-  const router = useRouter();
-
-  useEffect(() => {
-    if (Platform.OS === "web" || !isAuthenticated) return;
-
-    // Register for push notifications
-    async function register() {
-      if (!Device.isDevice) return;
-
-      const { status: existing } = await Notifications.getPermissionsAsync();
-      let finalStatus = existing;
-
-      if (existing !== "granted") {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-
-      if (finalStatus !== "granted") return;
-
-      const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-      const tokenData = await Notifications.getExpoPushTokenAsync({
-        projectId,
-      });
-
-      // Register token with server
-      try {
-        await notificationApi.registerToken(
-          tokenData.data,
-          Platform.OS as "ios" | "android",
-        );
-      } catch (err) {
-        console.error("Failed to register push token:", err);
-      }
-
-      // Android notification channel
-      if (Platform.OS === "android") {
-        await Notifications.setNotificationChannelAsync("default", {
-          name: "Default",
-          importance: Notifications.AndroidImportance.MAX,
-          vibrationPattern: [0, 250, 250, 250],
-        });
-      }
-    }
-
-    register();
-
-    // Listen for notifications
-    notificationListener.current =
-      Notifications.addNotificationReceivedListener((notification) => {
-        console.log("Notification received:", notification);
-      });
-
-    responseListener.current =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        const data = response.notification.request.content.data;
-        if (data?.screen === "home") {
-          router.push("/(tabs)");
-        }
-      });
-
-    return () => {
-      notificationListener.current?.remove();
-      responseListener.current?.remove();
-    };
-  }, [isAuthenticated]);
-}
-
-export default function RootLayout() {
-  const { session, isPending } = useProtectedRoute();
-  usePushNotifications(!!session);
+  }, [user, isPending, segments]);
 
   return (
     <Stack
       screenOptions={{
+        headerShown: false,
         contentStyle: { backgroundColor: "#000000" },
-        headerStyle: {
-          backgroundColor: "#000000",
-        },
-        headerTintColor: "#fff",
-        headerTitleStyle: {
-          fontWeight: "bold",
-        },
       }}
+      initialRouteName="(tabs)"
     >
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="(marketing)"
-        options={{ headerShown: false }}
-        redirect={Platform.OS !== "web"}
-      />
-      <Stack.Screen name="sign-in" options={{ headerShown: false }} />
-      <Stack.Screen name="sign-up" options={{ headerShown: false }} />
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="(marketing)" />
+      <Stack.Screen name="auth/login" />
+      <Stack.Screen name="book/[bookName]" />
+      <Stack.Screen name="chapter/[bookName]/[chapter]" />
+      <Stack.Screen name="settings" />
+      <Stack.Screen name="edit-profile" />
+      <Stack.Screen name="notification-settings" />
+      <Stack.Screen name="privacy-security" />
+      <Stack.Screen name="paywall" />
+      <Stack.Screen name="search" />
     </Stack>
   );
 }
 
+export default function RootLayout() {
+  return (
+    <ErrorBoundary>
+      <SubscriptionProvider>
+        <RootLayoutNav />
+      </SubscriptionProvider>
+    </ErrorBoundary>
+  );
+}
+
+const styles = StyleSheet.create({
+  errorContainer: {
+    flex: 1,
+    backgroundColor: "#000000",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  errorTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#ffffff",
+    marginBottom: 16,
+  },
+  errorDetails: {
+    fontSize: 12,
+    color: "#888888",
+    textAlign: "center",
+    marginTop: 8,
+  },
+});

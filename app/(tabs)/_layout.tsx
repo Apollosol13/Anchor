@@ -1,103 +1,64 @@
-import { Ionicons } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
-import { StyleSheet, View } from "react-native";
-import { AnchorLogo } from "../../components/AnchorLogo";
-
-const AnchorIcon = ({ color, size }: { color: string; size: number }) => (
-  <View style={styles.anchorContainer}>
-    <AnchorLogo size={size * 1.5} color={color} />
-  </View>
-);
+import { NativeTabs } from "expo-router/unstable-native-tabs";
+import { Platform } from "react-native";
+import { Tabs, TabList, TabTrigger, TabSlot } from "expo-router/ui";
+import { router } from "expo-router";
 
 export default function TabLayout() {
+  if (Platform.OS === "web") {
+    return (
+      <Tabs>
+        <TabSlot />
+        <TabList>
+          <TabTrigger name="index" href="/">
+            Home
+          </TabTrigger>
+          <TabTrigger name="bible" href="/bible">
+            Bible
+          </TabTrigger>
+          <TabTrigger name="bookmarks" href="/bookmarks">
+            Bookmarks
+          </TabTrigger>
+          <TabTrigger name="profile" href="/profile">
+            Profile
+          </TabTrigger>
+        </TabList>
+      </Tabs>
+    );
+  }
+
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: "#ffffff",
-        tabBarInactiveTintColor: "#6b7280",
-        tabBarStyle: {
-          backgroundColor: "#000000",
-          borderTopColor: "#1f1f1f",
-          borderTopWidth: 1,
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 8,
-        },
-        headerStyle: {
-          backgroundColor: "#000000",
-        },
-        headerTintColor: "#ffffff",
-        headerTitleStyle: {
-          fontWeight: "bold",
-        },
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "Home",
-          headerTitle: "Daily Verse",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="bible"
-        options={{
-          title: "Bible",
-          headerTitle: "Holy Bible",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="book-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="anchor"
-        options={{
-          title: "",
-          headerTitle: "⚓️ Anchor",
-          tabBarIcon: ({ color, size }) => (
-            <AnchorIcon color={color} size={size} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="bookmarks"
-        options={{
-          title: "Bookmarks",
-          headerTitle: "My Bookmarks",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="bookmark-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: "Settings",
-          headerTitle: "Settings",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen name="browse" options={{ href: null }} />
-      <Tabs.Screen name="favorites" options={{ href: null }} />
-    </Tabs>
+    <NativeTabs>
+      <NativeTabs.Trigger name="index">
+        <NativeTabs.Trigger.Icon
+          sf={{ default: "house", selected: "house.fill" }}
+          md="home"
+        />
+        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="bible">
+        <NativeTabs.Trigger.Icon
+          sf={{ default: "book", selected: "book.fill" }}
+          md="menu_book"
+        />
+        <NativeTabs.Trigger.Label>Bible</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="bookmarks">
+        <NativeTabs.Trigger.Icon
+          sf={{ default: "bookmark", selected: "bookmark.fill" }}
+          md="bookmark"
+        />
+        <NativeTabs.Trigger.Label>Bookmarks</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="profile">
+        <NativeTabs.Trigger.Icon
+          sf={{ default: "person", selected: "person.fill" }}
+          md="person"
+        />
+        <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+    </NativeTabs>
   );
 }
-
-const styles = StyleSheet.create({
-  anchorContainer: {
-    width: 56,
-    height: 56,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#1a1a1a",
-    borderRadius: 28,
-    marginBottom: -4,
-    borderWidth: 2,
-    borderColor: "#2a2a2a",
-  },
-});

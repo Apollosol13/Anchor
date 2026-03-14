@@ -33,11 +33,6 @@ const features = [
 ];
 
 export default function LandingPage() {
-  // On native, redirect to app tabs
-  if (Platform.OS !== "web") {
-    return null;
-  }
-
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.hero}>

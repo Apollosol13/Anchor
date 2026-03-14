@@ -1,5 +1,5 @@
 import { json, error, requireSession, checkRateLimit } from "@/lib/api-helpers";
-import { getPresignedUploadUrl } from "@/lib/storage";
+import { getPresignedUploadUrl } from "@/server/r2";
 
 export async function POST(request: Request) {
   try {

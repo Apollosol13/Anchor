@@ -29,20 +29,27 @@ It's now a **single Expo Router project** at root with:
 Anchor/
 ├── app/                          # Expo Router pages + API routes
 │   ├── (marketing)/              # Web-only: landing, privacy, terms
-│   ├── (tabs)/                   # Native app tabs: home, bible, anchor, bookmarks, settings
+│   ├── (tabs)/                   # Native app tabs: home, bible, anchor, bookmarks, profile
 │   ├── api/
 │   │   ├── ai/                   # explain, related, study-questions
 │   │   ├── audio/                # generate-chapter-audio
 │   │   ├── auth/                 # [...all] Better Auth catch-all
-│   │   ├── favorites/            # CRUD
+│   │   ├── favorites/            # CRUD (list, add, remove)
 │   │   ├── health+api.ts
-│   │   ├── images/               # presets, random, delete
+│   │   ├── images/               # presets (list, create), random, [id] (delete)
 │   │   ├── notifications/        # register-token, preferences, test
 │   │   ├── uploads/              # presigned URL for client uploads
 │   │   ├── verses/               # verse-of-day, search, chapter, reference, versions
 │   │   └── workflows/            # notifications (Upstash Workflow)
-│   ├── sign-in.tsx
-│   └── sign-up.tsx
+│   ├── auth/login.tsx            # Login / signup screen
+│   ├── book/[bookName].tsx       # Chapter selection grid
+│   ├── chapter/[bookName]/[chapter].tsx  # Chapter reader
+│   ├── edit-profile.tsx
+│   ├── notification-settings.tsx
+│   ├── paywall.tsx
+│   ├── privacy-security.tsx
+│   ├── search.tsx
+│   └── settings.tsx
 ├── server/
 │   ├── db/                       # Drizzle schema + Neon connection
 │   │   ├── index.ts
@@ -53,17 +60,22 @@ Anchor/
 │       ├── notificationService.ts
 │       └── openaiService.ts
 ├── lib/                          # Shared utilities
-│   ├── api.ts                    # Client-side fetch wrapper
+│   ├── api.ts                    # Client-side fetch wrapper (all API endpoints)
 │   ├── api-helpers.ts            # Server-side helpers (json, error, auth, rate limit)
 │   ├── auth.ts                   # Better Auth server config
-│   ├── auth-client.ts            # Better Auth client (Expo)
+│   ├── auth-client.ts            # Better Auth client + useSession, signIn, signUp, signOut, signInWithApple
+│   ├── constants/bibleBooks.ts   # Bible book metadata + navigation helpers
+│   ├── contexts/SubscriptionContext.tsx  # Subscription state (stubbed — all users are "free")
+│   ├── notifications.ts          # Client notification service (registration, preferences via API)
 │   ├── rate-limit.ts             # Upstash Redis rate limiter
-│   └── storage.ts                # Cloudflare R2 client
+│   └── storage.ts                # BibleVersionStorage (AsyncStorage) + R2 helpers (server)
 ├── components/                   # React Native components
+│   ├── AnchorLogo.tsx
+│   ├── ImageSelector.tsx         # Background picker with presigned R2 upload
+│   ├── ShareModal.tsx
+│   └── VerseCard.tsx             # Verse display with bookmark toggle via favoritesApi
 ├── public/.well-known/           # iOS Universal Links + Android App Links
 ├── _archive/                     # Old projects (reference only)
-│   ├── backend/
-│   └── anchrapp-web/
 ├── .env                          # Shared defaults (committed)
 ├── .env.development              # Dev URLs (committed)
 ├── .env.development.local        # Dev secrets (gitignored)
@@ -93,19 +105,38 @@ Anchor/
 - [x] `lib/auth.ts` — server config with Drizzle adapter + Expo plugin
 - [x] `lib/auth-client.ts` — client with `expoClient`, SecureStore on native, localStorage on web
 - [x] `app/api/auth/[...all]+api.ts` — catch-all handler
-- [x] `app/sign-in.tsx` / `app/sign-up.tsx` — auth screens
-- [x] `app/_layout.tsx` — protected route logic with session gating
+- [x] `app/auth/login.tsx` — unified login/signup screen with Apple Sign-In
+- [x] `app/_layout.tsx` — protected route logic using `useSession()`
+- [x] All screens use `useSession()` directly (no custom AuthContext/Provider)
+- [x] `signInWithApple()` helper in `auth-client.ts` (native Expo → Better Auth social)
 
 ### API Routes (all backend endpoints ported)
 
-- [x] Verses: verse-of-day, chapter, search, reference, versions
-- [x] AI: explain, related, study-questions (with per-user daily rate limits)
-- [x] Images: presets (list, create, delete), random
-- [x] Favorites: list, add, remove (auth-protected, user-scoped)
-- [x] Audio: generate-chapter-audio (OpenAI TTS, DB caching)
-- [x] Notifications: register-token, preferences (auto-creates defaults), test
-- [x] Health check
-- [x] Presigned upload route (R2)
+| Route | Methods | Auth | Client Function | Notes |
+|-------|---------|------|-----------------|-------|
+| `/api/verses/verse-of-day` | GET | No | `verseApi.getVerseOfTheDay()` | version, date, timezone params |
+| `/api/verses/chapter/[bookName]/[chapter]` | GET | No | `verseApi.getChapter()` | |
+| `/api/verses/search/[query]` | GET | No | `verseApi.searchVerses()` | |
+| `/api/verses/[reference]` | GET | No | `verseApi.getVerse()` | |
+| `/api/verses/versions` | GET | No | `verseApi.getVersions()` | |
+| `/api/ai/explain` | POST | Yes | `aiApi.explainVerse()` | 10 free / 100 pro per day |
+| `/api/ai/related` | POST | Yes | `aiApi.getRelatedVerses()` | |
+| `/api/ai/study-questions` | POST | Yes | `aiApi.getStudyQuestions()` | |
+| `/api/images/presets` | GET, POST | No/Yes | `imageApi.getPresets()` | POST has no client wrapper (admin) |
+| `/api/images/random` | GET | No | `imageApi.getRandomPreset()` | |
+| `/api/images/[id]` | DELETE | Yes | `imageApi.deletePreset()` | |
+| `/api/favorites` | POST | Yes | `favoritesApi.addFavorite()` | 409 on duplicate |
+| `/api/favorites/[userId]` | GET, DELETE | Yes | `favoritesApi.getFavorites()`, `.removeFavorite()` | DELETE param is favorite ID |
+| `/api/audio/generate-chapter-audio` | POST | Yes | `audioApi.generateChapterAudio()` | OpenAI TTS, DB cached |
+| `/api/reading-progress` | GET, POST, DELETE | Yes | `readingProgressApi.*` | Unique constraint on (user, book, chapter) |
+| `/api/account` | DELETE | Yes | `accountApi.deleteAccount()` | Cascade deletes all user data |
+| `/api/notifications/register-token` | POST | Yes | `notificationApi.registerToken()` | |
+| `/api/notifications/preferences` | GET, PUT | Yes | `notificationApi.getPreferences()`, `.updatePreferences()` | Auto-creates defaults |
+| `/api/notifications/test` | POST | Yes | `notificationApi.sendTest()` | |
+| `/api/uploads/presign` | POST | Yes | `uploadApi.getPresignedUrl()` | R2 presigned URL |
+| `/api/workflows/notifications` | POST | — | — | Upstash Workflow handler (cron) |
+| `/api/health` | GET | No | — | Health check |
+| `/api/auth/[...all]` | * | — | `authClient` | Better Auth catch-all |
 
 ### Notifications
 
@@ -117,8 +148,9 @@ Anchor/
   - `notificationWorkflow` — Upstash Workflow with durable parallel steps
   - Stale token cleanup (removes `DeviceNotRegistered` tokens)
 - [x] `app/api/workflows/notifications+api.ts` — thin route exposing workflow handler
-- [x] `app/_layout.tsx` — client-side push registration (permissions, token, listeners, Android channel)
-- [x] Preferences API auto-creates defaults on first access (so workflow discovers new users)
+- [x] `lib/notifications.ts` — client service using `notificationApi` (no Supabase)
+- [x] `app/_layout.tsx` — client-side push registration (permissions, token, Android channel)
+- [x] Preferences API auto-creates defaults on first access
 
 ### Rate Limiting
 
@@ -134,14 +166,26 @@ Anchor/
 
 ### Frontend Updates
 
-- [x] Supabase JS removed entirely
+- [x] Supabase JS removed entirely — zero references in active code
 - [x] Axios removed — using native `fetch()` with platform-aware base URL
 - [x] `lib/api.ts` — typed API client for all endpoints
-- [x] `ImageSelector` — removed Supabase Storage, uses local URI
+- [x] `ImageSelector` — uses presigned R2 upload via `uploadApi`
+- [x] `VerseCard` — bookmarks via `favoritesApi` (no direct DB queries)
+- [x] `bookmarks.tsx` — fetches/deletes via `favoritesApi`
 - [x] Settings screen wired to notification preferences API
-- [x] Sign out button with confirmation
+- [x] Sign out via Better Auth `signOut()` with confirmation
 - [x] Daily verse time picker
-- [x] All `response.data` unwrapped (fetch returns data directly, not axios wrapper)
+- [x] All screens use `useSession()` from Better Auth directly (no AuthContext wrapper)
+- [x] All import paths use `@/` alias (no `../src/` paths)
+- [x] Reading progress — `book/[bookName].tsx` and `chapter/[bookName]/[chapter].tsx` wired to `readingProgressApi`
+- [x] Account deletion — `privacy-security.tsx` calls `accountApi.deleteAccount()` then signs out
+- [x] `app.config.js` — cleaned up stale Supabase env references
+
+### Storage
+
+- [x] `generate-chapter-audio+api.ts` uploads MP3 to R2 and stores the public URL
+- [x] `ImageSelector` custom upload uses presigned URL → direct upload to R2
+- [x] `lib/storage.ts` — `BibleVersionStorage` uses AsyncStorage, R2 helpers use S3 SDK
 
 ### Environment
 
@@ -153,35 +197,14 @@ Anchor/
 
 ## What's Left
 
-### Before First Deploy
-
-- [ ] **Set up Neon project** — create database, get `DATABASE_URL`
-- [ ] **Run `npx drizzle-kit push`** — create all tables on Neon
-- [ ] **Data migration** — `pg_dump --data-only` from Supabase → `psql` import to Neon
-  - Critical: `verse_library` table (used by verse of the day theme selection)
-  - Verify row counts match for all 11 tables
-- [ ] **Set up Upstash** — create Redis database + QStash. Get tokens
-- [ ] **Set up Cloudflare R2** — create bucket, create API token, get account ID
-- [ ] **Generate `BETTER_AUTH_SECRET`** — `openssl rand -base64 32`
-- [ ] **Configure EAS Secrets** — set all production env vars via `eas secret:create`
-- [ ] **Schedule QStash cron** — `POST https://anchrapp.io/api/workflows/notifications` every minute
-- [ ] **Fix `apple-app-site-association`** — `appID` must match actual bundle ID in `app.json`
-- [ ] **Add `associatedDomains`** to `app.json` iOS config for universal links
-
-### Storage (done)
-
-- [x] `generate-chapter-audio+api.ts` uploads MP3 to R2 and stores the public URL
-- [x] `ImageSelector` custom upload uses presigned URL → direct upload to R2
-
 ### Nice to Have
 
-- [ ] Error boundary / loading states on auth screens
-- [ ] Bookmarks screen — currently a stub with TODO comments, needs to call favorites API
-- [ ] Reading progress tracking — schema exists but no API routes or UI
 - [ ] User profiles — schema exists but no API routes or UI
 - [ ] Shared verses — schema exists but no API routes or UI
 - [ ] Chapter completion notifications — preference exists but not implemented in workflow
 - [ ] Onboarding flow for new users (timezone detection, notification opt-in)
+- [ ] Subscription/paywall — `SubscriptionContext` is stubbed (all users "free"), paywall UI exists but packages are hardcoded
+- [ ] Error boundary / loading states on auth screens
 
 ---
 
@@ -192,14 +215,30 @@ Anchor/
 | Neon over Supabase Postgres                | Serverless HTTP driver, no connection pooling needed, works in Expo API Routes   |
 | Better Auth over Supabase Auth             | Framework-agnostic, Drizzle adapter, Expo plugin for native token storage        |
 | Expo API Routes over Express               | One project, one deploy. No separate server to maintain                          |
-| Upstash Workflow over node-cron            | Durable steps with retries, parallel fan-out, no long-running process needed     |
+| Upstash Workflow over node-cron            | Durable steps with retries, parallel fan-out, no long-running process needed. QStash cron triggers every 15 min (matches time picker granularity) |
 | Upstash Redis over in-memory rate limiting | Survives serverless cold starts, shared across instances                         |
 | Cloudflare R2 over Supabase Storage        | S3-compatible, zero egress fees, presigned uploads for client-side direct upload |
 | `@/` path alias → root                     | Single flat import convention, `@/server/db`, `@/lib`, `@/server/services`       |
+| No AuthContext/Provider                     | Better Auth's `useSession()` manages state internally — no wrapper needed        |
 
-## Deployment Target
+## Auth Pattern
 
-- **Native**: EAS Build → App Store / Play Store
-- **Web + API**: EAS Hosting (server output mode)
-- **Cron**: QStash schedule → `POST /api/workflows/notifications` every minute
-- **DNS**: Point `anchrapp.io` to EAS Hosting
+Better Auth's `createAuthClient("better-auth/react")` provides reactive hooks directly:
+
+```tsx
+// Reading session state — use in any component, no Provider needed
+import { useSession } from "@/lib/auth-client";
+const { data: session, isPending } = useSession();
+const user = session?.user;
+
+// Auth actions — import and call directly
+import { authClient, signOut, signInWithApple } from "@/lib/auth-client";
+await authClient.signIn.email({ email, password });
+await authClient.signUp.email({ email, password, name: "" });
+await signOut();
+await signInWithApple();
+```
+
+## Deployment
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for full iOS and web/API deployment instructions.

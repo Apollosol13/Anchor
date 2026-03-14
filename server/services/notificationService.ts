@@ -115,7 +115,13 @@ export async function sendTestNotification(userId: string): Promise<boolean> {
 
 // ─── Scheduling: find users who need notifications right now ───
 
-function getCurrentTimeInTimezone(timezone: string): string {
+/**
+ * Returns the current HH:MM in the given timezone, rounded down
+ * to the nearest 15-minute mark (00, 15, 30, 45) to match the
+ * time picker granularity. The workflow runs every 15 minutes,
+ * so this ensures each user is matched exactly once per window.
+ */
+function getCurrentTimeSlot(timezone: string): string {
   try {
     const parts = new Intl.DateTimeFormat("en-US", {
       timeZone: timezone,
@@ -125,8 +131,12 @@ function getCurrentTimeInTimezone(timezone: string): string {
     }).formatToParts(new Date());
 
     const hour = parts.find((p) => p.type === "hour")?.value || "00";
-    const minute = parts.find((p) => p.type === "minute")?.value || "00";
-    return `${hour}:${minute}`;
+    const minute = parseInt(
+      parts.find((p) => p.type === "minute")?.value || "0",
+      10,
+    );
+    const roundedMinute = Math.floor(minute / 15) * 15;
+    return `${hour}:${String(roundedMinute).padStart(2, "0")}`;
   } catch {
     return "";
   }
@@ -145,7 +155,7 @@ export async function findDailyVerseRecipients(): Promise<UserToNotify[]> {
   const toNotify: UserToNotify[] = [];
   for (const user of users) {
     const tz = user.timezone || "America/New_York";
-    const currentTime = getCurrentTimeInTimezone(tz);
+    const currentTime = getCurrentTimeSlot(tz);
     if (currentTime === user.dailyVerseTime) {
       toNotify.push({
         userId: user.userId,
@@ -171,7 +181,7 @@ export async function findStreakReminderRecipients(): Promise<UserToNotify[]> {
   const toNotify: UserToNotify[] = [];
   for (const user of users) {
     const tz = user.timezone || "America/New_York";
-    const currentTime = getCurrentTimeInTimezone(tz);
+    const currentTime = getCurrentTimeSlot(tz);
     if (currentTime === "20:00") {
       toNotify.push({
         userId: user.userId,

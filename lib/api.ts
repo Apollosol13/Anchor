@@ -89,6 +89,8 @@ export const imageApi = {
     return apiFetch(`/api/images/presets${qs}`);
   },
   getRandomPreset: () => apiFetch("/api/images/random"),
+  deletePreset: (id: string) =>
+    apiFetch(`/api/images/${id}`, { method: "DELETE" }),
 };
 
 // Favorites endpoints
@@ -137,6 +139,32 @@ export const notificationApi = {
       body: JSON.stringify(prefs),
     }),
   sendTest: () => apiFetch("/api/notifications/test", { method: "POST" }),
+};
+
+// Reading progress endpoints
+export const readingProgressApi = {
+  getProgress: (book?: string) => {
+    const qs = book ? `?book=${encodeURIComponent(book)}` : "";
+    return apiFetch<
+      { id: string; book: string; chapter: number; completedAt: string }[]
+    >(`/api/reading-progress${qs}`);
+  },
+  markComplete: (book: string, chapter: number) =>
+    apiFetch("/api/reading-progress", {
+      method: "POST",
+      body: JSON.stringify({ book, chapter }),
+    }),
+  markIncomplete: (book: string, chapter: number) =>
+    apiFetch("/api/reading-progress", {
+      method: "DELETE",
+      body: JSON.stringify({ book, chapter }),
+    }),
+};
+
+// Account endpoints
+export const accountApi = {
+  deleteAccount: () =>
+    apiFetch("/api/account", { method: "DELETE" }),
 };
 
 // Upload endpoints
