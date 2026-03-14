@@ -29,6 +29,8 @@ export async function requireSession(request: Request) {
 }
 
 export async function checkRateLimit(request: Request) {
+  if (!globalRateLimit) return;
+
   const ip =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     request.headers.get("x-real-ip") ||

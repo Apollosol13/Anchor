@@ -1,4 +1,5 @@
 import { Platform } from "react-native";
+import { authClient } from "./auth-client";
 
 const BASE_URL =
   Platform.OS === "web"
@@ -9,13 +10,19 @@ async function apiFetch<T = any>(
   path: string,
   options?: RequestInit,
 ): Promise<T> {
+  const authHeaders: Record<string, string> = {};
+  if (Platform.OS !== "web") {
+    const cookie = authClient.getCookie();
+    if (cookie) authHeaders.cookie = cookie;
+  }
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
+      ...authHeaders,
       ...options?.headers,
     },
-    credentials: "include", // Send auth cookies
+    credentials: "include",
   });
 
   if (!res.ok) {

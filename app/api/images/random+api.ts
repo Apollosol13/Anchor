@@ -5,7 +5,7 @@ export async function GET(request: Request) {
   try {
     await checkRateLimit(request);
     const preset = await getRandomPreset();
-    if (!preset) return error("No presets available", 404);
+    if (!preset) return json(null);
     return json(preset);
   } catch (err) {
     if (err instanceof Response) return err;

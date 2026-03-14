@@ -1,6 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as FileSystem from "expo-file-system/legacy";
-import { LinearGradient } from "expo-linear-gradient";
 import * as Sharing from "expo-sharing";
 import React, { useRef } from "react";
 import {
@@ -83,17 +82,14 @@ export const VerseCard: React.FC<VerseCardProps> = ({
           style={styles.backgroundImage}
           resizeMode="cover"
         />
-        <LinearGradient
-          colors={["rgba(0,0,0,0.5)", "rgba(0,0,0,0.7)"]}
-          style={styles.gradient}
-        >
+        <View style={styles.gradient}>
           <View style={styles.content}>
             <Text style={styles.verseText}>"{verse.text}"</Text>
             <Text style={styles.reference}>
               {verse.reference} ({verse.version})
             </Text>
           </View>
-        </LinearGradient>
+        </View>
       </View>
 
       <View style={styles.actions}>
@@ -140,6 +136,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
+    experimental_backgroundImage:
+      "linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.7))",
   },
   content: {
     alignItems: "center",

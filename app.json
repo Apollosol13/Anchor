@@ -6,31 +6,33 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "sdkVersion": "54.0.0",
     "scheme": "anchor",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anchor.bible",
-      "newArchEnabled": false
+      "bundleIdentifier": "com.anchor.bible"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#000000"
       },
-      "package": "com.anchor.bible",
-      "newArchEnabled": false
+      "package": "com.anchor.bible"
     },
     "web": {
       "bundler": "metro",
       "output": "server",
       "favicon": "./assets/favicon.png"
+    },
+    "experiments": {
+      "reactCompiler": true
     },
     "plugins": [
       "expo-router",
@@ -41,7 +43,10 @@
           "color": "#000000"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-asset",
+      "expo-font",
+      "expo-sharing"
     ]
   }
 }

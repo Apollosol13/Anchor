@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Stack, SplashScreen, useRouter, useSegments } from "expo-router";
 import { Platform } from "react-native";
+
+SplashScreen.preventAutoHideAsync();
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import Constants from "expo-constants";
@@ -26,11 +28,13 @@ function useProtectedRoute() {
   useEffect(() => {
     if (isPending) return;
 
+    SplashScreen.hideAsync();
+
     const inAuthGroup = segments[0] === "sign-in" || segments[0] === "sign-up";
     const inMarketing = segments[0] === "(marketing)";
 
-    // Allow marketing pages without auth (web only)
-    if (inMarketing) return;
+    // Allow marketing pages without auth on web only
+    if (inMarketing && Platform.OS === "web") return;
 
     if (!session && !inAuthGroup) {
       router.replace("/sign-in");
@@ -39,12 +43,12 @@ function useProtectedRoute() {
     }
   }, [session, isPending, segments]);
 
-  return session;
+  return { session, isPending };
 }
 
 function usePushNotifications(isAuthenticated: boolean) {
-  const notificationListener = useRef<Notifications.EventSubscription>();
-  const responseListener = useRef<Notifications.EventSubscription>();
+  const notificationListener = useRef<Notifications.EventSubscription>(null);
+  const responseListener = useRef<Notifications.EventSubscription>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -113,12 +117,13 @@ function usePushNotifications(isAuthenticated: boolean) {
 }
 
 export default function RootLayout() {
-  const session = useProtectedRoute();
+  const { session, isPending } = useProtectedRoute();
   usePushNotifications(!!session);
 
   return (
     <Stack
       screenOptions={{
+        contentStyle: { backgroundColor: "#000000" },
         headerStyle: {
           backgroundColor: "#000000",
         },
@@ -129,9 +134,14 @@ export default function RootLayout() {
       }}
     >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="(marketing)" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="(marketing)"
+        options={{ headerShown: false }}
+        redirect={Platform.OS !== "web"}
+      />
       <Stack.Screen name="sign-in" options={{ headerShown: false }} />
       <Stack.Screen name="sign-up" options={{ headerShown: false }} />
     </Stack>
   );
 }
+

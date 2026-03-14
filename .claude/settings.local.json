@@ -27,7 +27,9 @@
       "Bash(node -e \"const a = require\\('@better-auth/core'\\); const keys = Object.keys\\(a\\).filter\\(k => k.toLowerCase\\(\\).includes\\('auth'\\)\\); console.log\\(keys.slice\\(0,20\\)\\)\" 2>&1 | head -5; node -e \"const {betterAuth} = require\\('better-auth'\\); const a = betterAuth\\({database:{type:'memory'}}\\); console.log\\(typeof a.handler, Object.keys\\(a\\).filter\\(k=>k.includes\\('handler'\\)\\)\\)\" 2>&1 | head -5)",
       "Bash(node -e \"const {betterAuth} = require\\('better-auth'\\); const a = betterAuth\\({database:{type:'memory'}}\\); console.log\\(a.handler.toString\\(\\).slice\\(0, 200\\)\\)\" 2>&1 | head -5)",
       "Bash(grep \"expo-file-system\" /Users/alexlane/development/projects/Anchor/node_modules/expo-file-system/package.json 2>/dev/null | head -3; node -e \"try{const fs=require\\('expo-file-system'\\);console.log\\(Object.keys\\(fs\\).filter\\(k=>k.includes\\('document'\\)||k.includes\\('Document'\\)\\)\\)}catch\\(e\\){console.log\\(e.message\\)}\" 2>&1 | head -3)",
-      "Bash(find /Users/alexlane/development/projects/Anchor/node_modules/expo-file-system -name \"*.d.ts\" | head -5 && grep -r \"documentDirectory\" /Users/alexlane/development/projects/Anchor/node_modules/expo-file-system --include=\"*.d.ts\" 2>/dev/null | head -5 || grep -r \"documentDirectory\" /Users/alexlane/development/projects/Anchor/node_modules/expo-file-system --include=\"*.ts\" 2>/dev/null | head -5)"
+      "Bash(find /Users/alexlane/development/projects/Anchor/node_modules/expo-file-system -name \"*.d.ts\" | head -5 && grep -r \"documentDirectory\" /Users/alexlane/development/projects/Anchor/node_modules/expo-file-system --include=\"*.d.ts\" 2>/dev/null | head -5 || grep -r \"documentDirectory\" /Users/alexlane/development/projects/Anchor/node_modules/expo-file-system --include=\"*.ts\" 2>/dev/null | head -5)",
+      "Skill(neon-toolkit)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

@@ -13,6 +13,10 @@ export async function GET(request: Request) {
     return json(verse);
   } catch (err) {
     if (err instanceof Response) return err;
+    // Empty verse library is expected before seeding
+    if (err instanceof Error && err.message.startsWith("No verses found")) {
+      return json(null);
+    }
     console.error("Error fetching verse of the day:", err);
     return error("Failed to fetch verse of the day");
   }
