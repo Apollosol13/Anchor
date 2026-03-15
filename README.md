@@ -1,119 +1,103 @@
 # Anchor ⚓️
 
-A beautiful Bible app for sharing verses with stunning imagery, multiple Bible versions, and AI-powered explanations.
+A Bible app for reading scripture, creating verse images, and growing in faith — with AI-powered study tools and daily notifications.
 
 ## Features
 
-- 📖 **Verse of the Day** - Daily inspiration with shareable images
-- 🎨 **Image Presets** - Curated beautiful backgrounds for verses
-- 🖼️ **Custom Images** - Upload your own photos
-- 📚 **Multiple Bible Versions** - ESV, NIV, KJV, and more
-- 🤖 **AI Explanations** - Deep dive into scripture with OpenAI
-- ❤️ **Favorites** - Save and organize your favorite verses
-- 🔗 **Share** - Beautiful verse cards for social media
+- 📖 **Daily Verse** — themed by day of week, shareable as images
+- 📚 **Full Bible** — 5 translations (WEB, KJV, ASV, FBV, NLT) via API.Bible
+- 🤖 **AI Study Tools** — verse explanations, related verses, study questions (OpenAI)
+- 🎧 **Audio Bible** — chapter-by-chapter TTS (OpenAI)
+- 🎨 **Verse Cards** — preset backgrounds + custom image uploads
+- 🔖 **Favorites** — save and organize verses
+- 🔔 **Push Notifications** — daily verse + streak reminders (timezone-aware)
+- 🌐 **Web** — landing page, privacy policy, terms of service
 
 ## Tech Stack
 
-### Frontend
-- React 18 with TypeScript
-- Vite (build tool)
-- Tailwind CSS
-- React Query (data fetching)
-- Supabase (auth & storage)
+- **Runtime** — [Bun](https://bun.sh)
+- **Framework** — [Expo Router](https://docs.expo.dev/router/introduction/) (native iOS/Android + web + API routes)
+- **Database** — [Neon Postgres](https://neon.tech) + [Drizzle ORM](https://orm.drizzle.team)
+- **Auth** — [Better Auth](https://www.better-auth.com) with Expo plugin
+- **Scheduled Jobs** — [Upstash Workflow](https://upstash.com/docs/workflow) (durable notification pipeline)
+- **Rate Limiting** — [Upstash Redis](https://upstash.com/docs/redis)
+- **File Storage** — [Cloudflare R2](https://developers.cloudflare.com/r2/) (S3-compatible, zero egress fees)
+- **Push Notifications** — [expo-notifications](https://docs.expo.dev/versions/latest/sdk/notifications/) + [expo-server-sdk](https://github.com/expo/expo-server-sdk-node)
+- **Linting** — [oxlint](https://oxc.rs/docs/guide/usage/linter)
+- **Formatting** — [oxfmt](https://oxc.rs/docs/guide/usage/formatter)
+- **Testing** — [bun test](https://bun.sh/docs/cli/test)
 
-### Backend
-- Node.js with Express
-- TypeScript
-- PostgreSQL with Prisma ORM
-- Supabase (database & auth)
+## Getting Started
 
-### External APIs
-- Bible API (scripture data)
-- OpenAI API (verse explanations)
-- Supabase Storage (image hosting)
+See [SETUP.md](./SETUP.md) for the full local development guide.
+
+```bash
+bun install
+cp .env.development.local.example .env.development.local  # fill in secrets
+bun run db:generate && bun run db:migrate                  # push schema to Neon
+bun start                                                   # start Expo dev server
+```
+
+## Environment
+
+| File                     | Purpose            | Git       |
+| ------------------------ | ------------------ | --------- |
+| `.env`                   | Shared defaults    | Committed |
+| `.env.development`       | Dev URLs           | Committed |
+| `.env.production`        | Prod URLs          | Committed |
+| `.env.development.local` | Dev secrets        | Ignored   |
+| `.env.production.local`  | Prod secrets       | Ignored   |
+| `.env.local`             | Personal overrides | Ignored   |
 
 ## Project Structure
 
 ```
-anchor/
-├── frontend/          # React application
-├── backend/           # Express API server
-└── README.md
+app/                 Expo Router pages + API routes
+  (marketing)/       Web-only: landing, privacy, terms
+  (tabs)/            Native app: home, bible, anchor, bookmarks, settings
+  api/               Server-side API routes
+    ai/              explain, related, study-questions
+    audio/           generate-chapter-audio
+    auth/            Better Auth catch-all
+    favorites/       CRUD
+    images/          presets, random, delete
+    notifications/   register-token, preferences, test
+    verses/          verse-of-day, search, chapter, reference, versions
+    workflows/       Upstash Workflow (notifications)
+server/
+  db/                Drizzle schema + Neon connection
+  services/          Business logic (bible, AI, images, notifications)
+lib/                 Shared utilities (auth, rate limiting, API helpers)
+components/          React Native components
+public/              Static files (.well-known)
+_archive/            Old backend + web projects (reference only)
 ```
 
-## Getting Started
+## Scripts
 
-### Prerequisites
-- Node.js 18+ and npm
-- PostgreSQL database (or Supabase account)
-- API Keys:
-  - Bible API key
-  - OpenAI API key
-  - Supabase credentials
-
-### Installation
-
-1. Clone the repository:
 ```bash
-git clone https://github.com/Apollosol13/Anchor.git
-cd Anchor
+bun start              # Expo dev server
+bun run web            # Web only
+bun run ios            # iOS simulator
+bun run android        # Android emulator
+
+bun run db:generate    # Generate Drizzle migrations
+bun run db:migrate     # Run migrations on Neon
+bun run db:studio      # Open Drizzle Studio
+
+bun run fmt            # Format with oxfmt
+bun run lnt            # Lint with oxlint
+bun run typecheck      # TypeScript check
+bun test               # Run tests
+
+bun run qstash:local   # Local QStash dev server
 ```
 
-2. Set up the backend:
-```bash
-cd backend
-npm install
-cp .env.example .env
-# Edit .env with your credentials
-npx prisma migrate dev
-npm run dev
-```
+## Docs
 
-3. Set up the frontend:
-```bash
-cd frontend
-npm install
-cp .env.example .env
-# Edit .env with your credentials
-npm run dev
-```
-
-4. Visit `http://localhost:5173` in your browser
-
-## Environment Variables
-
-### Backend (.env)
-```env
-DATABASE_URL="postgresql://..."
-SUPABASE_URL="your-supabase-url"
-SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
-BIBLE_API_KEY="your-bible-api-key"
-OPENAI_API_KEY="your-openai-api-key"
-PORT=3001
-```
-
-### Frontend (.env)
-```env
-VITE_SUPABASE_URL="your-supabase-url"
-VITE_SUPABASE_ANON_KEY="your-supabase-anon-key"
-VITE_API_URL="http://localhost:3001"
-```
-
-## Development
-
-- Frontend runs on `http://localhost:5173`
-- Backend runs on `http://localhost:3001`
-
-## Contributing
-
-This is a personal project, but suggestions and feedback are welcome!
+- [SETUP.md](./SETUP.md) — local development setup
+- [MIGRATION.md](./MIGRATION.md) — migration status + what's left to do
 
 ## License
 
-MIT License - see LICENSE file for details
-
-## Acknowledgments
-
-- Bible API for scripture data
-- OpenAI for AI-powered explanations
-- Supabase for backend infrastructure
+MIT

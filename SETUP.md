@@ -1,315 +1,219 @@
 # Local Development Setup
 
-This guide will help you set up the Anchor Bible app for local development.
-
 ## Prerequisites
 
-Make sure you have installed:
-- **Node.js** 18 or higher ([download](https://nodejs.org))
-- **npm** (comes with Node.js)
-- **Git** ([download](https://git-scm.com))
+- [Bun](https://bun.sh) (runtime + package manager + test runner)
+- [Expo CLI](https://docs.expo.dev/get-started/installation/) (`bun install -g expo-cli` or use `bunx expo`)
+- [EAS CLI](https://docs.expo.dev/build/setup/) (`bun install -g eas-cli`) — for builds + deploys
+- iOS Simulator (Xcode) and/or Android Emulator (Android Studio)
 
-## Step 1: Clone the Repository
+## Step 1: Install Dependencies
 
 ```bash
 git clone https://github.com/Apollosol13/Anchor.git
 cd Anchor
+bun install
 ```
 
 ## Step 2: Get API Keys
 
-You'll need to create free accounts and get API keys for:
+You'll need accounts with these services:
 
-### 2.1 Supabase (Database & Storage)
+| Service           | What for                                   | Get it at                                          |
+| ----------------- | ------------------------------------------ | -------------------------------------------------- |
+| **Neon**          | Postgres database                          | [neon.tech](https://neon.tech)                     |
+| **API.Bible**     | Scripture data                             | [scripture.api.bible](https://scripture.api.bible) |
+| **OpenAI**        | AI features + TTS audio                    | [platform.openai.com](https://platform.openai.com) |
+| **Upstash**       | Redis (rate limiting) + QStash (workflows) | [upstash.com](https://upstash.com)                 |
+| **Cloudflare R2** | File storage (images, audio)               | [dash.cloudflare.com](https://dash.cloudflare.com) |
 
-1. Go to [https://supabase.com](https://supabase.com) and sign up
-2. Create a new project
-3. Wait for it to initialize (~2 minutes)
-4. Go to **Settings** > **API** and copy:
-   - Project URL
-   - `anon` public key
-   - `service_role` key
+All have free tiers sufficient for development.
 
-5. Create storage buckets:
-   - Go to **Storage**
-   - Create `preset-images` bucket (public)
-   - Create `user-uploads` bucket (public)
-
-### 2.2 Bible API
-
-1. Go to [https://scripture.api.bible](https://scripture.api.bible)
-2. Sign up for free account
-3. Create an API key
-4. Copy the key
-
-### 2.3 OpenAI (Optional - for AI features)
-
-1. Go to [https://platform.openai.com](https://platform.openai.com)
-2. Sign up or login
-3. Go to **API Keys**
-4. Create new secret key
-5. Copy the key
-
-> **Note**: OpenAI is optional for development. The app will still work without it, but AI explanations won't be available.
-
-## Step 3: Set Up Backend
+## Step 3: Configure Environment
 
 ```bash
-cd backend
-
-# Install dependencies
-npm install
-
-# Create .env file
-cp .env.example .env
+cp .env.development.local.example .env.development.local
 ```
 
-Edit `backend/.env` and add your credentials:
+Fill in your secrets in `.env.development.local`:
 
 ```env
-# Use local PostgreSQL or Supabase PostgreSQL URL
-DATABASE_URL="postgresql://postgres:password@localhost:5432/anchor"
-# Or use Supabase:
-# DATABASE_URL="postgresql://postgres.[project-ref]:[password]@db.[project-ref].supabase.co:5432/postgres"
+# Database — get from Neon dashboard → Connection Details
+DATABASE_URL=postgresql://user:pass@ep-xxx.us-east-2.aws.neon.tech/dbname?sslmode=require
 
-SUPABASE_URL="https://xxxxx.supabase.co"
-SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
-BIBLE_API_KEY="your-bible-api-key"
-OPENAI_API_KEY="your-openai-api-key"
-PORT=3001
-NODE_ENV="development"
-ALLOWED_ORIGINS="http://localhost:5173"
+# Auth — generate with: openssl rand -base64 32
+BETTER_AUTH_SECRET=your-generated-secret
+
+# APIs
+OPENAI_API_KEY=sk-...
+BIBLE_API_KEY=your-bible-api-key
+
+# Cloudflare R2 — get from Cloudflare dashboard → R2 → Manage R2 API Tokens
+R2_ACCOUNT_ID=your-account-id
+R2_ACCESS_KEY_ID=your-access-key
+R2_SECRET_ACCESS_KEY=your-secret-key
+R2_BUCKET=anchor-dev
+R2_PUBLIC_URL=https://pub-xxx.r2.dev   # or custom domain
+
+# Upstash Redis — get from Upstash console → Redis → REST API
+UPSTASH_REDIS_REST_URL=https://xxx.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your-token
+
+# Upstash QStash — for local dev, start with `bun run qstash:local`
+# These are the local dev server defaults:
+QSTASH_TOKEN=eyJVc2VySUQiOiJkZWZhdWx0VXNlciIsIlBhc3N3b3JkIjoiZGVmYXVsdFBhc3N3b3JkIn0=
+QSTASH_CURRENT_SIGNING_KEY=sig_7kYjw48mhY7kAjqNGcy6cr29RJ6r
+QSTASH_NEXT_SIGNING_KEY=sig_5ZB6DVzB1wjE8S6rZ7eenA8Pdnhs
 ```
 
-### 3.1 Set Up Database
+The non-secret URLs (like `BETTER_AUTH_URL=http://localhost:8081`) are already in the committed `.env.development` file.
 
-If using local PostgreSQL:
+## Step 4: Set Up Database
 
 ```bash
-# Install PostgreSQL if you haven't
-# macOS: brew install postgresql
-# Start PostgreSQL service
+# Generate Drizzle migration files from schema
+bun run db:generate
 
-# Create database
-createdb anchor
+# Apply migrations to your Neon database
+bun run db:migrate
 ```
 
-If using Supabase (recommended for easier setup):
-- Just use the DATABASE_URL from Supabase dashboard
-- It includes everything you need!
-
-### 3.2 Run Migrations
+To inspect your database:
 
 ```bash
-# Generate Prisma client
-npx prisma generate
-
-# Run migrations
-npx prisma migrate dev --name init
-
-# Optional: Open Prisma Studio to view database
-npx prisma studio
+bun run db:studio
 ```
 
-### 3.3 Start Backend Server
+This opens [Drizzle Studio](https://orm.drizzle.team/drizzle-studio/overview) in your browser.
+
+### Seed Data
+
+If you have a `verse_library` export from the old Supabase database:
 
 ```bash
-npm run dev
+# Import verse library data (needed for verse of the day)
+psql $DATABASE_URL < verse_library_dump.sql
 ```
 
-Backend should now be running on `http://localhost:3001`
-
-Test it:
-```bash
-curl http://localhost:3001/health
-```
-
-## Step 4: Set Up Frontend
-
-Open a new terminal window:
+## Step 5: Start Development
 
 ```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Create .env file
-cp .env.example .env
+# Start Expo dev server
+bun start
 ```
 
-Edit `frontend/.env`:
+Then press:
 
-```env
-VITE_SUPABASE_URL="https://xxxxx.supabase.co"
-VITE_SUPABASE_ANON_KEY="your-anon-public-key"
-VITE_API_URL="http://localhost:3001"
-```
+- `i` — open iOS simulator
+- `a` — open Android emulator
+- `w` — open web browser
 
-### 4.1 Start Frontend Development Server
+### Running the QStash local dev server
+
+For testing scheduled notification workflows locally:
 
 ```bash
-npm run dev
+# In a separate terminal
+bun run qstash:local
 ```
 
-Frontend should now be running on `http://localhost:5173`
+This starts a local QStash server at `http://127.0.0.1:8080` that your workflow can send to during development.
 
-## Step 5: Add Sample Data (Optional)
+## Step 6: Verify Everything Works
 
-### 5.1 Add Image Presets
+1. **Web**: open `http://localhost:8081` — you should see the landing page
+2. **API**: `curl http://localhost:8081/api/health` — should return `{"status":"healthy"}`
+3. **Native**: the app should show the sign-in screen, then the daily verse after auth
+4. **Database**: `bun run db:studio` — tables should be visible and queryable
 
-You can add sample image presets to your database:
+## Scripts Reference
 
-1. Find some free images from [Unsplash](https://unsplash.com) or [Pexels](https://pexels.com)
-2. Upload them to Supabase Storage in the `preset-images` bucket
-3. Use Prisma Studio to add records:
-
-```bash
-# Open Prisma Studio
-npx prisma studio
-```
-
-Or use SQL in Supabase:
-
-```sql
-INSERT INTO "ImagePreset" (id, name, "imageUrl", category, tags, "isActive", "createdAt")
-VALUES (
-  gen_random_uuid(),
-  'Beautiful Mountain',
-  'https://images.unsplash.com/photo-1506905925346-21bda4d32df4',
-  'nature',
-  ARRAY['mountains', 'peaceful'],
-  true,
-  NOW()
-);
-```
-
-## Step 6: Test the App
-
-1. Open `http://localhost:5173` in your browser
-2. You should see the Verse of the Day
-3. Try these features:
-   - Change background image
-   - Click "Explain with AI" (if OpenAI key is set)
-   - Navigate to "Browse" and search for verses
-   - Download a verse image
+| Script                 | What it does                                      |
+| ---------------------- | ------------------------------------------------- |
+| `bun start`            | Start Expo dev server                             |
+| `bun run web`          | Start web only                                    |
+| `bun run ios`          | Build + run on iOS simulator                      |
+| `bun run android`      | Build + run on Android emulator                   |
+| `bun run db:generate`  | Generate Drizzle migrations from schema           |
+| `bun run db:migrate`   | Apply migrations to database                      |
+| `bun run db:studio`    | Open Drizzle Studio (browser-based DB viewer)     |
+| `bun run db:seed`      | Seed database with sample data                    |
+| `bun run qstash:local` | Start local QStash dev server                     |
+| `bun run fmt`          | Format code with oxfmt                            |
+| `bun run fmt:check`    | Check formatting (CI)                             |
+| `bun run lnt`          | Lint + auto-fix with oxlint                       |
+| `bun run lnt:check`    | Check lint (CI)                                   |
+| `bun run typecheck`    | TypeScript type check                             |
+| `bun test`             | Run tests                                         |
+| `bun test --watch`     | Run tests in watch mode                           |
+| `bun run sanity`       | Run all checks (typecheck + lint + format + test) |
 
 ## Common Issues
 
-### Backend won't start
+### "Cannot find module" errors
 
-**Error: `P1001: Can't reach database server`**
-- Check that PostgreSQL is running
-- Verify DATABASE_URL is correct
-- If using Supabase, check internet connection
+Make sure you ran `bun install`. If path aliases aren't resolving, check that `tsconfig.json` has:
 
-**Error: `BIBLE_API_KEY not set`**
-- Add your Bible API key to `.env`
-- Restart the backend server
-
-### Frontend shows errors
-
-**Error: `Network Error`**
-- Make sure backend is running on port 3001
-- Check `VITE_API_URL` in frontend `.env`
-
-**No images showing**
-- Make sure you've created Supabase storage buckets
-- Check that buckets are set to public
-- Add some image presets to the database
-
-### AI Explanations not working
-
-- Verify OPENAI_API_KEY is valid
-- Check that you have credits in OpenAI account
-- View browser console for errors
-
-## Development Workflow
-
-### Making Changes to Backend
-
-```bash
-cd backend
-
-# Watch mode - auto-restarts on changes
-npm run dev
-
-# If you change Prisma schema:
-npx prisma generate
-npx prisma migrate dev
+```json
+{
+  "paths": {
+    "@/*": ["./*"]
+  }
+}
 ```
 
-### Making Changes to Frontend
+### Database connection errors
 
-```bash
-cd frontend
+- Verify `DATABASE_URL` in `.env.development.local` is correct
+- Make sure you're using the Neon connection string with `?sslmode=require`
+- Check that your IP isn't blocked in Neon's dashboard
 
-# Development server with hot reload
-npm run dev
+### API routes returning 500
 
-# Build for production (test)
-npm run build
-npm run preview
-```
+- Check terminal output for the actual error
+- Verify all env vars are set (missing `BIBLE_API_KEY` or `OPENAI_API_KEY` will cause failures)
+- Run `bun run typecheck` to catch type errors
 
-### Git Workflow
+### Push notifications not working in simulator
 
-```bash
-# Create a new feature branch
-git checkout -b feature/my-feature
+Push notifications require a physical device. The simulator will skip token registration silently. To test:
 
-# Make changes and commit
-git add .
-git commit -m "feat: add new feature"
-
-# Push to GitHub
-git push origin feature/my-feature
-```
+1. Build a dev client: `bun run build:ios:preview`
+2. Install on physical device
+3. Notifications will register on app launch
 
 ## Project Structure
 
 ```
 Anchor/
-├── backend/
-│   ├── src/
-│   │   ├── routes/        # API endpoints
-│   │   ├── services/      # Business logic
-│   │   └── server.ts      # Express server
-│   ├── prisma/
-│   │   └── schema.prisma  # Database schema
-│   └── package.json
-│
-├── frontend/
-│   ├── src/
-│   │   ├── components/    # React components
-│   │   ├── lib/          # Utilities
-│   │   └── App.tsx       # Main app
-│   └── package.json
-│
-├── README.md
-├── DEPLOYMENT.md          # Production deployment guide
-└── SETUP.md              # This file
+├── app/                     # Expo Router (pages + API routes)
+│   ├── (marketing)/         # Web: landing, privacy, terms
+│   ├── (tabs)/              # Native: home, bible, anchor, bookmarks, settings
+│   ├── api/                 # Server-side API routes (Expo API Routes)
+│   ├── sign-in.tsx
+│   └── sign-up.tsx
+├── server/
+│   ├── db/                  # Drizzle schema + Neon connection
+│   │   ├── index.ts         # db instance (Neon HTTP + Drizzle)
+│   │   └── schema.ts        # All table definitions
+│   └── services/            # Business logic
+│       ├── bibleService.ts
+│       ├── imageService.ts
+│       ├── notificationService.ts  # Push + Upstash Workflow
+│       └── openaiService.ts
+├── lib/                     # Shared utilities
+│   ├── api.ts               # Client-side API wrapper
+│   ├── api-helpers.ts       # Server-side (json, error, auth, rate limit)
+│   ├── auth.ts              # Better Auth server config
+│   ├── auth-client.ts       # Better Auth client (Expo)
+│   ├── rate-limit.ts        # Upstash Redis rate limiter
+│   └── storage.ts           # Cloudflare R2 client
+├── components/              # React Native components
+├── public/.well-known/      # iOS Universal Links + Android App Links
+├── .env                     # Shared defaults (committed)
+├── .env.development         # Dev URLs (committed)
+├── .env.development.local   # Dev secrets (gitignored)
+├── drizzle.config.ts        # Drizzle Kit config
+├── app.json                 # Expo config
+└── package.json
 ```
-
-## Next Steps
-
-- Read the [README.md](README.md) for project overview
-- Check [DEPLOYMENT.md](DEPLOYMENT.md) when ready to deploy
-- Explore the codebase and make it your own!
-- Add more features:
-  - User authentication
-  - Favorites persistence
-  - Social sharing improvements
-  - More Bible versions
-  - Custom fonts and themes
-
-## Getting Help
-
-If you run into issues:
-
-1. Check the console/terminal for error messages
-2. Review this setup guide
-3. Check that all environment variables are set correctly
-4. Make sure all services (PostgreSQL, backend, frontend) are running
-
-Happy coding! 🚀⚓️
