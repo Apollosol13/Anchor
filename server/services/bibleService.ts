@@ -214,7 +214,7 @@ export async function getVerseOfTheDay(
     // Fetch full text from Bible API
     const verse = await getVerse(verseData.referenceCode, version);
 
-    // Cache
+    // Cache (use onConflictDoNothing to handle concurrent requests gracefully)
     await db.insert(verseOfTheDay).values({
       date: dateStr,
       book: verseData.book,
@@ -222,7 +222,7 @@ export async function getVerseOfTheDay(
       verse: verseData.verse,
       version,
       text: verse.text,
-    });
+    }).onConflictDoNothing();
 
     return verse;
   } catch (error) {
