@@ -23,6 +23,7 @@ const client = new Client({ token: QSTASH_TOKEN });
 
 async function main() {
   const scheduleId = await client.schedules.create({
+    scheduleId: "anchor-notifications",
     destination: `${APP_URL}/api/workflows/notifications`,
     cron: "*/15 * * * *", // every 15 minutes
   });
