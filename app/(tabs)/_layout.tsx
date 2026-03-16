@@ -1,7 +1,6 @@
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 import { Platform } from "react-native";
 import { Tabs, TabList, TabTrigger, TabSlot } from "expo-router/ui";
-import { router } from "expo-router";
 
 export default function TabLayout() {
   if (Platform.OS === "web") {

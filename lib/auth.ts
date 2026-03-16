@@ -14,6 +14,7 @@ export const auth = betterAuth({
       verification: schema.verification,
     },
   }),
+  trustedOrigins: ["io.anchrapp.anchor://"],
   emailAndPassword: {
     enabled: true,
   },

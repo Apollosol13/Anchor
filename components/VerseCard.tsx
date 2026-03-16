@@ -18,7 +18,7 @@ import { favoritesApi } from '../lib/api';
 import { useSession } from '../lib/auth-client';
 import { useEffect } from 'react';
 
-const { width } = Dimensions.get('window');
+const { width, height: screenHeight } = Dimensions.get('window');
 
 interface VerseCardProps {
   verse: {
@@ -89,8 +89,8 @@ export const VerseCard: React.FC<VerseCardProps> = ({ verse, backgroundImage }) 
           f.verse === parseInt(verseNum),
       );
       setIsBookmarked(found);
-    } catch (error) {
-      console.error('Error checking bookmark:', error);
+    } catch {
+      // Silently ignore — expected when session is expired or user signed out
     }
   };
 
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
   },
   card: {
     width: width - 32,
-    height: (width - 32) * 16 / 9,  // 9:16 aspect ratio for vertical format
+    height: Math.min((width - 32) * 16 / 9, screenHeight * 0.55),
     borderRadius: 16,
     overflow: 'hidden',
     borderWidth: 1,

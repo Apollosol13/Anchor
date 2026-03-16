@@ -84,7 +84,16 @@ function RootLayoutNav() {
     >
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="(marketing)" />
-      <Stack.Screen name="auth/login" />
+      <Stack.Screen
+            name="auth/login"
+            options={{
+              headerShown: true,
+              headerTitle: "",
+              headerBackTitle: "Back",
+              headerStyle: { backgroundColor: "#000000" },
+              headerTintColor: "#ffffff",
+            }}
+          />
       <Stack.Screen name="book/[bookName]" />
       <Stack.Screen name="chapter/[bookName]/[chapter]" />
       <Stack.Screen name="settings" />
