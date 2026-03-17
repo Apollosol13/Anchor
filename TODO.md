@@ -8,3 +8,5 @@
     - eas ota update setup
     - verse of the day data fetching should be cached daily. only one request per day for verse of the day is necesarry
     - rename favorites / bookmarks to match eachother
+    - setup cloudlfare r2 / test user template uploads
+    - setup posthog 

@@ -1,6 +1,5 @@
 import { useFonts } from "expo-font";
 import * as Linking from "expo-linking";
-import * as Notifications from "expo-notifications";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { Component, useEffect } from "react";
 import { StyleSheet, Text, View } from "react-native";

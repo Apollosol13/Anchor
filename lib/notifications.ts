@@ -1,18 +1,25 @@
-import * as Device from "expo-device";
-import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import { notificationApi } from "./api";
 
-// Configure notification handler
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+// Lazy-load expo-notifications to avoid localStorage errors during web SSR
+let Notifications: typeof import("expo-notifications") | null = null;
+let Device: typeof import("expo-device") | null = null;
+
+if (Platform.OS !== "web") {
+  Notifications = require("expo-notifications");
+  Device = require("expo-device");
+
+  // Configure notification handler (native only)
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+}
 
 export interface NotificationPreferences {
   dailyVerseEnabled: boolean;
@@ -35,6 +42,8 @@ export class NotificationService {
   }
 
   async registerForPushNotifications(): Promise<string | null> {
+    if (!Notifications || !Device) return null;
+
     if (!Device.isDevice) {
       console.log("Must use physical device for Push Notifications");
       return null;
