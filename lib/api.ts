@@ -1,10 +1,47 @@
+import Constants from "expo-constants";
 import { Platform } from "react-native";
 import { authClient } from "./auth-client";
 
-const BASE_URL =
-  Platform.OS === "web"
-    ? "" // Relative paths on web (same origin)
-    : process.env.EXPO_PUBLIC_API_URL || "http://localhost:8081";
+function getDevServerHost(): string | null {
+  // 1. Expo config (works in Expo Go)
+  const hostUri = Constants.expoConfig?.hostUri;
+  if (hostUri) return hostUri.split("/")[0];
+
+  // 2. Dev client: React Native knows the URL the bundle was loaded from
+  if (__DEV__) {
+    try {
+      const devServer =
+        require("react-native/Libraries/Core/Devtools/getDevServer")?.default?.();
+      if (devServer?.url) {
+        const { hostname, port } = new URL(devServer.url);
+        return port ? `${hostname}:${port}` : hostname;
+      }
+    } catch {}
+  }
+
+  return null;
+}
+
+function getBaseUrl(): string {
+  if (Platform.OS === "web") return ""; // Relative paths on web (same origin)
+
+  // Preview/production builds: explicit URL set via eas.json env
+  if (process.env.EXPO_PUBLIC_API_URL) return process.env.EXPO_PUBLIC_API_URL;
+
+  const hostPort = getDevServerHost();
+  if (hostPort) {
+    const [host, port] = hostPort.split(":");
+    const isTunnel = host.includes(".") && !host.match(/^\d/);
+    const url = isTunnel ? `https://${host}` : `http://${host}:${port || "8081"}`;
+    console.log(`🔗 API base URL: ${url} (from: ${hostPort})`);
+    return url;
+  }
+
+  console.log("🔗 API base URL: http://localhost:8081 (fallback)");
+  return "http://localhost:8081";
+}
+
+const BASE_URL = getBaseUrl();
 
 async function apiFetch<T = any>(
   path: string,

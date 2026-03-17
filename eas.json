@@ -10,14 +10,16 @@
     },
     "preview": {
       "distribution": "internal",
-      "ios": {
-        "simulator": true
+      "channel": "staging",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://anchor-bible.expo.app"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_NO_CAPABILITY_SYNC": "1"
+        "EXPO_NO_CAPABILITY_SYNC": "1",
+        "EXPO_PUBLIC_API_URL": "https://anchor-bible.expo.app"
       }
     }
   },

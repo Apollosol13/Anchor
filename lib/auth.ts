@@ -14,7 +14,10 @@ export const auth = betterAuth({
       verification: schema.verification,
     },
   }),
-  trustedOrigins: ["io.anchrapp.anchor://"],
+  trustedOrigins: [
+    "io.anchrapp.anchor://",
+    "https://anchor-bible.expo.app",
+  ],
   emailAndPassword: {
     enabled: true,
   },
