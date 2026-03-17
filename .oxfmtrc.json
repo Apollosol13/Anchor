@@ -1,0 +1,18 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": [
+    ".turbo/",
+    ".agents/",
+    ".claude/",
+    "server/db/migrations/",
+    ".expo/",
+    "android/",
+    "coverage/",
+    "dist/",
+    "ios/",
+    "metro.config.cjs",
+    "vite.config.ts.timestamp-*",
+    "web-build/"
+  ],
+  "printWidth": 80
+}

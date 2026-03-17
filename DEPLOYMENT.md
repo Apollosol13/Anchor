@@ -1,358 +1,179 @@
-# Deployment Guide for Anchor Bible App
+# Deployment
 
-This guide will walk you through deploying your Anchor Bible app to production using Railway for the backend and your choice of hosting for the frontend.
+## Overview
 
-## Prerequisites
+| Target        | Platform    | Command                                    | URL                                                  |
+| ------------- | ----------- | ------------------------------------------ | ---------------------------------------------------- |
+| **iOS App**   | App Store   | `eas build` + `eas submit`                 | App Store (ASC ID: `6758559895`)                     |
+| **Web + API** | EAS Hosting | `eas deploy`                               | `https://anchrapp.io`                                |
+| **Cron**      | QStash      | `bun run scripts/setup-qstash-schedule.ts` | Triggers `/api/workflows/notifications` every 15 min |
 
-Before deploying, you'll need accounts and API keys for:
-
-1. **Supabase** - Database, Authentication, and Storage
-2. **Railway** - Backend hosting
-3. **Bible API** - Scripture data (https://scripture.api.bible)
-4. **OpenAI** - AI explanations (https://platform.openai.com)
-5. **Vercel/Netlify** (optional) - Frontend hosting
+The native iOS app and the web + API server are deployed independently. The iOS app talks to the API at `EXPO_PUBLIC_API_URL` (`https://anchrapp.io`), so the **web/API must be deployed first** (or simultaneously) for the native app to function.
 
 ---
 
-## Part 1: Set Up Supabase
+## Before First Deploy
 
-### 1.1 Create Supabase Project
+- [ ] **Set up Neon project** — create database, get `DATABASE_URL`
+- [ ] **Run `npx drizzle-kit push`** — create all tables on Neon
+- [ ] **Data migration** — `pg_dump --data-only` from Supabase → `psql` import to Neon
+  - Critical: `verse_library` table (used by verse of the day theme selection)
+  - Verify row counts match for all 11 tables
+- [ ] **Set up Upstash** — create Redis database + QStash. Get tokens
+- [ ] **Set up Cloudflare R2** — create bucket, create API token, get account ID
+- [ ] **Generate `BETTER_AUTH_SECRET`** — `openssl rand -base64 32`
+- [ ] **Configure EAS Secrets** — set all production env vars via `eas secret:create`
+- [ ] **Create QStash schedule** — run `bun run scripts/setup-qstash-schedule.ts` (needs `QSTASH_TOKEN` + `APP_URL`)
 
-1. Go to [https://supabase.com](https://supabase.com) and sign up/login
-2. Click "New Project"
-3. Fill in project details:
-   - **Name**: Anchor
-   - **Database Password**: Choose a strong password
-   - **Region**: Select closest to your users
-4. Wait for project to initialize (~2 minutes)
+## Deploy Order (First Time)
 
-### 1.2 Set Up Database
+1. **Set up external services** — Neon, Upstash, R2, OpenAI (see checklist above)
+2. **Run migrations** — `npx drizzle-kit push` to create tables on Neon
+3. **Migrate data** — `pg_dump` from Supabase → `psql` import to Neon
+4. **Set EAS secrets** — all production env vars (see list above)
+5. **Deploy web + API** — `bun run web:export && bun run web:deploy:prod`
+6. **Configure DNS** — point `anchrapp.io` to EAS Hosting
+7. **Verify API** — `curl https://anchrapp.io/api/health`
+8. **Set up QStash schedule** — `bun run scripts/setup-qstash-schedule.ts`
+9. **Build + submit iOS** — `eas build --profile production --platform ios --auto-submit`
 
-1. In your Supabase dashboard, go to **SQL Editor**
-2. Click "New Query" and run this to set up Row Level Security:
-
-```sql
--- Enable RLS on all tables (will be created by Prisma)
-ALTER TABLE IF EXISTS "User" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE IF EXISTS "Favorite" ENABLE ROW LEVEL SECURITY;
-ALTER TABLE IF EXISTS "ImagePreset" ENABLE ROW LEVEL SECURITY;
-```
-
-### 1.3 Set Up Storage Buckets
-
-1. Go to **Storage** in Supabase dashboard
-2. Create two buckets:
-   - **preset-images** (Public bucket)
-     - Used for your curated background images
-   - **user-uploads** (Public bucket)
-     - Used for user-uploaded custom backgrounds
-
-3. Set storage policies:
-
-**For preset-images:**
-```sql
--- Allow public read
-CREATE POLICY "Public can view preset images"
-ON storage.objects FOR SELECT
-USING (bucket_id = 'preset-images');
-
--- Allow authenticated uploads (you'll add admin check later)
-CREATE POLICY "Authenticated can upload presets"
-ON storage.objects FOR INSERT
-WITH CHECK (bucket_id = 'preset-images' AND auth.role() = 'authenticated');
-```
-
-**For user-uploads:**
-```sql
--- Allow public read
-CREATE POLICY "Public can view user uploads"
-ON storage.objects FOR SELECT
-USING (bucket_id = 'user-uploads');
-
--- Allow users to upload their own
-CREATE POLICY "Users can upload their own images"
-ON storage.objects FOR INSERT
-WITH CHECK (
-  bucket_id = 'user-uploads' 
-  AND (storage.foldername(name))[1] = auth.uid()::text
-);
-```
-
-### 1.4 Get Supabase Credentials
-
-1. Go to **Settings** > **API**
-2. Copy these values (you'll need them later):
-   - **Project URL** (looks like: `https://xxxxx.supabase.co`)
-   - **anon public** key
-   - **service_role** key (keep this secret!)
-
----
-
-## Part 2: Get External API Keys
-
-### 2.1 Bible API Key
-
-1. Go to [https://scripture.api.bible](https://scripture.api.bible)
-2. Sign up for a free account
-3. Create a new API key
-4. Copy the key
-
-### 2.2 OpenAI API Key
-
-1. Go to [https://platform.openai.com](https://platform.openai.com)
-2. Sign up or login
-3. Go to **API Keys**
-4. Create a new secret key
-5. Copy the key (you won't see it again!)
-
----
-
-## Part 3: Deploy Backend to Railway
-
-### 3.1 Set Up Railway Project
-
-1. Go to [https://railway.app](https://railway.app) and sign up/login with GitHub
-2. Click **New Project**
-3. Select **Deploy from GitHub repo**
-4. Connect your GitHub account
-5. Select the **Apollosol13/Anchor** repository
-6. Railway will detect it's a monorepo
-
-### 3.2 Configure Backend Service
-
-1. After creating project, click **New Service** > **GitHub Repo**
-2. Name it "anchor-backend"
-3. Click on the service and go to **Settings**
-4. Set **Root Directory** to: `backend`
-5. Set **Build Command** to: `npm install && npx prisma generate && npm run build`
-6. Set **Start Command** to: `npm run prisma:migrate && npm start`
-
-### 3.3 Add PostgreSQL Database
-
-1. In your Railway project, click **New** > **Database** > **PostgreSQL**
-2. Railway will automatically create a database
-3. It will add a `DATABASE_URL` environment variable to your backend service
-
-### 3.4 Set Environment Variables
-
-1. Click on your backend service
-2. Go to **Variables** tab
-3. Add these variables:
-
-```
-DATABASE_URL = (automatically added by Railway)
-SUPABASE_URL = your-supabase-project-url
-SUPABASE_SERVICE_ROLE_KEY = your-service-role-key
-BIBLE_API_KEY = your-bible-api-key
-OPENAI_API_KEY = your-openai-api-key
-PORT = 3001
-NODE_ENV = production
-ALLOWED_ORIGINS = https://your-frontend-domain.com
-```
-
-4. Click **Deploy** (top right)
-
-### 3.5 Get Backend URL
-
-1. Once deployed, go to **Settings** tab
-2. Under **Networking**, click **Generate Domain**
-3. Copy the URL (something like: `https://anchor-backend-production.up.railway.app`)
-
----
-
-## Part 4: Deploy Frontend
-
-### Option A: Deploy to Vercel
-
-1. Go to [https://vercel.com](https://vercel.com)
-2. Click **New Project**
-3. Import your GitHub repository
-4. Configure:
-   - **Framework Preset**: Vite
-   - **Root Directory**: `frontend`
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
-
-5. Add Environment Variables:
-```
-VITE_SUPABASE_URL = your-supabase-url
-VITE_SUPABASE_ANON_KEY = your-supabase-anon-key
-VITE_API_URL = your-railway-backend-url
-```
-
-6. Click **Deploy**
-
-### Option B: Deploy to Netlify
-
-1. Go to [https://netlify.com](https://netlify.com)
-2. Click **Add new site** > **Import existing project**
-3. Connect to GitHub and select your repo
-4. Configure:
-   - **Base directory**: `frontend`
-   - **Build command**: `npm run build`
-   - **Publish directory**: `frontend/dist`
-
-5. Add Environment Variables (same as Vercel above)
-6. Click **Deploy**
-
----
-
-## Part 5: Update CORS Settings
-
-After frontend is deployed:
-
-1. Go back to Railway
-2. Update the `ALLOWED_ORIGINS` variable:
-```
-ALLOWED_ORIGINS = https://your-vercel-app.vercel.app,http://localhost:5173
-```
-
-3. Redeploy the backend
-
----
-
-## Part 6: Add Initial Image Presets
-
-You'll want to add some beautiful preset images:
-
-### 6.1 Find Images
-
-Use free image sources:
-- [Unsplash](https://unsplash.com) - Search: "nature", "sunset", "mountains"
-- [Pexels](https://pexels.com) - Beautiful free photos
-- Make sure images are landscape orientation (16:9 or 4:3)
-
-### 6.2 Upload to Supabase
-
-1. Download 10-20 beautiful images
-2. Go to Supabase **Storage** > **preset-images**
-3. Upload images
-4. Copy the public URL for each
-
-### 6.3 Add to Database
-
-Use the Supabase SQL Editor:
-
-```sql
-INSERT INTO "ImagePreset" (id, name, "imageUrl", category, tags, "isActive", "sortOrder", "createdAt")
-VALUES 
-  (gen_random_uuid(), 'Beautiful Sunset', 'https://your-supabase.co/storage/v1/object/public/preset-images/sunset1.jpg', 'sunset', ARRAY['peaceful', 'warm'], true, 1, NOW()),
-  (gen_random_uuid(), 'Mountain Peaks', 'https://your-supabase.co/storage/v1/object/public/preset-images/mountain1.jpg', 'mountains', ARRAY['inspiring', 'nature'], true, 2, NOW()),
-  (gen_random_uuid(), 'Ocean Waves', 'https://your-supabase.co/storage/v1/object/public/preset-images/ocean1.jpg', 'ocean', ARRAY['peaceful', 'blue'], true, 3, NOW());
--- Add more...
-```
-
----
-
-## Part 7: Testing
-
-### Test Backend
+## Subsequent Deploys
 
 ```bash
-curl https://your-railway-backend.railway.app/health
+# API/web changes only (no native code changes)
+bun run web:export && bun run web:deploy:prod
+
+# Native changes (new native modules, app.config.js changes, version bump)
+eas build --profile production --platform ios --auto-submit
+
+# Both
+bun run web:export && bun run web:deploy:prod
+eas build --profile production --platform ios --auto-submit
 ```
 
-Should return: `{"status":"healthy","timestamp":"..."}`
+## iOS Deployment
 
-### Test Verse API
+### Prerequisites
+
+- Apple Developer account with App Store Connect access
+- EAS CLI installed (`npm install -g eas-cli`)
+- Logged in to EAS (`eas login`)
+- Registered devices for preview builds (`eas device:create`)
+
+### Build Profiles
+
+Defined in `eas.json`:
+
+| Profile       | Purpose                    | Distribution                  |
+| ------------- | -------------------------- | ----------------------------- |
+| `development` | Dev client with hot reload | Internal (registered devices) |
+| `preview`     | QA testing on simulator    | Internal (simulator)          |
+| `production`  | App Store release          | App Store                     |
+
+### Commands
 
 ```bash
-curl https://your-railway-backend.railway.app/api/verses/verse-of-day
+# Development build (registered devices only)
+eas build --profile development --platform ios
+
+# Preview build (iOS simulator)
+eas build --profile preview --platform ios
+# shortcut:
+bun run build:ios:preview
+
+# Production build (App Store)
+eas build --profile production --platform ios
+
+# Submit to App Store
+eas submit --platform ios
+
+# Build + submit in one step
+eas build --profile production --platform ios --auto-submit
 ```
 
-### Test Frontend
+### EAS Secrets
 
-1. Visit your deployed frontend URL
-2. Check that verse of the day loads
-3. Try changing the background image
-4. Test the AI explanation feature
-5. Search for verses
+Production secrets must be set via EAS before building. These are injected at build time and available to the API routes at runtime:
 
----
+```bash
+# Database
+eas secret:create --name DATABASE_URL --value "postgresql://..."
 
-## Part 8: Custom Domain (Optional)
+# Auth
+eas secret:create --name BETTER_AUTH_SECRET --value "$(openssl rand -base64 32)"
 
-### For Frontend (Vercel)
+# Upstash (Redis + QStash)
+eas secret:create --name UPSTASH_REDIS_REST_URL --value "https://..."
+eas secret:create --name UPSTASH_REDIS_REST_TOKEN --value "..."
+eas secret:create --name QSTASH_TOKEN --value "..."
+eas secret:create --name QSTASH_CURRENT_SIGNING_KEY --value "..."
+eas secret:create --name QSTASH_NEXT_SIGNING_KEY --value "..."
 
-1. Go to your project **Settings** > **Domains**
-2. Add your custom domain (e.g., `anchor.yoursite.com`)
-3. Follow DNS configuration instructions
+# Cloudflare R2
+eas secret:create --name CLOUDFLARE_ACCOUNT_ID --value "..."
+eas secret:create --name R2_ACCESS_KEY_ID --value "..."
+eas secret:create --name R2_SECRET_ACCESS_KEY --value "..."
+eas secret:create --name R2_BUCKET_NAME --value "..."
+eas secret:create --name R2_PUBLIC_URL --value "https://..."
 
-### For Backend (Railway)
+# OpenAI (AI features + TTS)
+eas secret:create --name OPENAI_API_KEY --value "sk-..."
+```
 
-1. Go to backend service **Settings** > **Networking**
-2. Add custom domain
-3. Update `ALLOWED_ORIGINS` in environment variables
+### Version Management
 
----
-
-## Monitoring & Maintenance
-
-### Railway Dashboard
-
-- Monitor backend logs and metrics
-- Check database usage
-- View error logs
-
-### Supabase Dashboard
-
-- Monitor storage usage
-- Check API usage
-- View database queries
-
-### Cost Estimates
-
-- **Railway**: ~$5-10/month (includes database)
-- **Supabase**: Free tier should handle thousands of users
-- **Vercel/Netlify**: Free tier sufficient for most use
-- **OpenAI**: ~$0.002 per explanation (pay as you go)
-- **Bible API**: Free tier
+Versions are managed remotely by EAS (`appVersionSource: "remote"` in `eas.json`). Production builds auto-increment the build number. To bump the app version, update `version` in `app.config.js`.
 
 ---
 
-## Troubleshooting
+## Web + API Deployment (EAS Hosting)
 
-### Backend won't start
+The web build and all API routes (`app/api/**/*+api.ts`) are deployed together as a single server bundle. This is required for the native app to work — without it, all API calls fail.
 
-- Check Railway logs
-- Verify all environment variables are set
-- Ensure DATABASE_URL is correct
+### Prerequisites
 
-### Images not loading
+- `app.config.js` has `web.output: "server"` (already configured)
+- EAS CLI installed
 
-- Check Supabase storage bucket is public
-- Verify CORS settings in Supabase
-- Check image URLs are correct
+### Commands
 
-### AI explanations failing
+```bash
+# Export the web + server bundle
+bun run web:export
 
-- Verify OPENAI_API_KEY is valid
-- Check OpenAI account has credits
-- View backend error logs
+# (Optional) Remove source maps to reduce bundle size
+bun run web:export:delete-maps
 
-### Database connection issues
+# Deploy to EAS Hosting (production)
+bun run web:deploy:prod
+# equivalent to: npx eas-cli@latest deploy --prod
+```
 
-- Check DATABASE_URL format
-- Verify Prisma migrations ran
-- Check Railway PostgreSQL is running
+### DNS
+
+Point `anchrapp.io` to EAS Hosting. EAS will provide the DNS target after first deploy. The domain must match:
+
+- `BETTER_AUTH_URL` in `.env.production`
+- `EXPO_PUBLIC_API_URL` in `.env.production`
+- `associatedDomains` in `app.config.js` (for Universal Links)
+
+### What Gets Deployed
+
+- **Web pages**: `(marketing)/*` — landing page, privacy, terms
+- **API routes**: All `+api.ts` files — auth, verses, favorites, AI, notifications, etc.
+- **Static assets**: `public/` — `.well-known/` for Universal Links / App Links
+
+The native app screens (`(tabs)/*`, `chapter/*`, etc.) are **not** served by the web deploy — they're bundled into the iOS binary by EAS Build.
 
 ---
 
-## Next Steps
+## Post-Deploy: QStash Cron
 
-1. **Add Authentication**: Implement Supabase Auth for user accounts
-2. **Add Admin Panel**: Create interface to manage image presets
-3. **Analytics**: Add Google Analytics or Plausible
-4. **SEO**: Add meta tags and sitemap
-5. **PWA**: Make it installable as a Progressive Web App
+After the web API is live, set up the notification cron schedule:
 
----
+```bash
+# Requires QSTASH_TOKEN in environment or .env.production.local
+APP_URL=https://anchrapp.io bun run scripts/setup-qstash-schedule.ts
+```
 
-## Support
-
-For issues:
-- Check Railway logs
-- Review Supabase logs
-- Check browser console for frontend errors
-
-Happy deploying! 🚀⚓️
+This creates a QStash schedule that POSTs to `/api/workflows/notifications` every 15 minutes, triggering the Upstash Workflow for daily verse and streak reminder notifications.

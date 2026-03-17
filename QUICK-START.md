@@ -1,261 +1,81 @@
-# ⚓️ Anchor - Quick Start Guide
+# Quick Start
 
-## What You Have Now
+Get Anchor running locally in under 10 minutes.
 
-A complete, production-ready Bible verse sharing application with:
-
-✅ **Backend (Express + TypeScript)**
-- REST API with verse endpoints
-- OpenAI integration for explanations
-- Prisma ORM with PostgreSQL
-- Railway-ready deployment config
-
-✅ **Frontend (React + TypeScript)**
-- Beautiful verse card generator
-- Image preset selector
-- AI-powered explanations
-- Search functionality
-- Download & share features
-
-✅ **Database Schema**
-- Users & authentication ready
-- Favorites system
-- Image presets management
-- Verse of the day caching
-
-✅ **Full Documentation**
-- Local setup guide
-- Deployment guide for Railway
-- Comprehensive README
-
-## Next Immediate Steps
-
-### 1. Get Your API Keys (15 minutes)
-
-You need these free accounts:
-
-- [ ] **Supabase** → [supabase.com](https://supabase.com) (Database & Storage)
-- [ ] **Bible API** → [scripture.api.bible](https://scripture.api.bible) (Scripture data)
-- [ ] **OpenAI** → [platform.openai.com](https://platform.openai.com) (AI features)
-
-### 2. Local Development (5 minutes)
+## 1. Install
 
 ```bash
-# Backend
-cd backend
-npm install
-cp .env.example .env
-# Edit .env with your API keys
-npm run dev
-
-# Frontend (new terminal)
-cd frontend
-npm install  
-cp .env.example .env
-# Edit .env with your keys
-npm run dev
+git clone https://github.com/Apollosol13/Anchor.git
+cd Anchor
+bun install
 ```
 
-Open [http://localhost:5173](http://localhost:5173)
+## 2. Get API Keys
 
-### 3. Add Sample Images (10 minutes)
+Create free accounts at:
 
-1. Find 5-10 beautiful images:
-   - [Unsplash](https://unsplash.com) - Search: "mountains", "sunset", "nature"
-   - Download landscape images (1920x1080)
+- [neon.tech](https://neon.tech) — Postgres database
+- [scripture.api.bible](https://scripture.api.bible) — Bible verses
+- [platform.openai.com](https://platform.openai.com) — AI features (optional for initial dev)
 
-2. Upload to Supabase:
-   - Storage → preset-images → Upload
-   - Copy public URLs
+## 3. Configure Secrets
 
-3. Add to database via Prisma Studio:
-   ```bash
-   cd backend
-   npx prisma studio
-   ```
-
-### 4. Deploy to Production (30 minutes)
-
-Follow the detailed [DEPLOYMENT.md](DEPLOYMENT.md) guide to:
-
-- [ ] Deploy backend to Railway
-- [ ] Deploy frontend to Vercel/Netlify
-- [ ] Configure environment variables
-- [ ] Test production app
-
-## File Structure Overview
-
-```
-Anchor/
-├── backend/              # Express API
-│   ├── src/
-│   │   ├── routes/      # API endpoints
-│   │   ├── services/    # Business logic
-│   │   └── server.ts    # Main server
-│   └── prisma/          # Database schema
-│
-├── frontend/            # React App
-│   ├── src/
-│   │   ├── components/  # UI components
-│   │   │   ├── VerseCard.tsx
-│   │   │   ├── ImageSelector.tsx
-│   │   │   ├── VerseOfTheDay.tsx
-│   │   │   └── VerseBrowser.tsx
-│   │   └── lib/         # API utilities
-│   └── public/
-│
-└── docs/
-    ├── README.md        # Project overview
-    ├── SETUP.md         # Local development
-    └── DEPLOYMENT.md    # Production deploy
+```bash
+cp .env.development.local.example .env.development.local
 ```
 
-## Key Features Implemented
+Fill in at minimum:
 
-### For Users:
-- 📖 Daily verse with beautiful backgrounds
-- 🎨 Choose from preset images or upload custom
-- 📚 Browse multiple Bible versions
-- 🤖 AI-powered verse explanations
-- ⬇️ Download verse images
-- 📤 Share on social media
-- ❤️ Save favorites (backend ready)
+```env
+DATABASE_URL=postgresql://...          # from Neon dashboard
+BETTER_AUTH_SECRET=change-me           # openssl rand -base64 32
+BIBLE_API_KEY=your-key                 # from API.Bible
+```
 
-### For You (Developer):
-- 🔐 Secure backend with rate limiting
-- 🗄️ Scalable database schema
-- 📊 Image preset management system
-- 🚀 Railway deployment config
-- 🎨 Beautiful Tailwind UI
-- ♿ Responsive mobile design
-- 🔌 Modular API structure
+## 4. Set Up Database
 
-## Tech Stack
+```bash
+bun run db:generate   # generate migrations from Drizzle schema
+bun run db:migrate    # apply to Neon
+```
 
-**Frontend:**
-- React 18 + TypeScript
-- Vite (super fast builds)
-- Tailwind CSS (styling)
-- React Query (API calls)
-- html2canvas (image downloads)
+## 5. Start
 
-**Backend:**
-- Node.js + Express
-- TypeScript
-- Prisma ORM
-- PostgreSQL
-- OpenAI API
-- Bible API
+```bash
+bun start
+```
 
-**Hosting:**
-- Railway (backend) - ~$5/month
-- Vercel/Netlify (frontend) - Free
-- Supabase (database & storage) - Free tier
+- Press `w` for web — `http://localhost:8081`
+- Press `i` for iOS simulator
+- Press `a` for Android emulator
 
-## What You Can Customize
+## What You Get
 
-### Easy Customizations:
-- Colors & theme (tailwind.config.js)
-- Font styles (index.css)
-- Verse selection algorithm (bibleService.ts)
-- Default Bible version
-- Image categories
+| Feature                | How it works                                                 |
+| ---------------------- | ------------------------------------------------------------ |
+| **Daily Verse**        | Themed by day of week, cached in DB, fetched from API.Bible  |
+| **Bible Reader**       | Browse books + chapters, 5 translations                      |
+| **AI Explanations**    | OpenAI GPT-3.5 with per-user daily rate limits               |
+| **Verse Images**       | Preset backgrounds + custom uploads, share/download          |
+| **Audio Bible**        | OpenAI TTS, cached per chapter                               |
+| **Push Notifications** | Expo push tokens + Upstash Workflow scheduling               |
+| **Auth**               | Email/password via Better Auth, session-protected API routes |
+| **Web Pages**          | Landing page, privacy policy, terms of service               |
 
-### Medium Customizations:
-- Add user authentication
-- Build admin dashboard for presets
-- Add more Bible versions
-- Custom sharing templates
-- Analytics integration
+## Key Scripts
 
-### Advanced Features:
-- Verse commenting system
-- User-generated content
-- Social features (following, likes)
-- Email verse subscriptions
-- Mobile apps (React Native)
+```bash
+bun start              # dev server
+bun run db:studio      # browse database in browser
+bun run fmt            # format code
+bun run lnt            # lint code
+bun run typecheck      # check types
+bun test               # run tests
+bun run sanity         # run all checks
+```
 
-## Cost Estimates
+## Next Steps
 
-**Free Tier (Perfect for starting):**
-- Frontend: Free (Vercel/Netlify)
-- Database: Free (Supabase)
-- Storage: Free (Supabase - 1GB)
-- Bible API: Free (limited requests)
-
-**With Light Traffic:**
-- Railway Backend: $5/month
-- OpenAI: ~$1-5/month (pay per use)
-- **Total: ~$6-10/month**
-
-**With Heavy Traffic (1000+ users/day):**
-- Railway: $10-20/month
-- Supabase: Free or $25/month for Pro
-- OpenAI: $10-50/month
-- **Total: ~$20-70/month**
-
-## Support & Resources
-
-**Documentation:**
-- [SETUP.md](SETUP.md) - Local development setup
-- [DEPLOYMENT.md](DEPLOYMENT.md) - Production deployment
-- [README.md](README.md) - Project overview
-
-**External Docs:**
-- [Railway Docs](https://docs.railway.app)
-- [Supabase Docs](https://supabase.com/docs)
-- [Prisma Docs](https://www.prisma.io/docs)
-- [React Query Docs](https://tanstack.com/query)
-
-## Roadmap Ideas
-
-### Phase 1 (Now):
-- [x] Core functionality
-- [x] Basic design
-- [ ] Add your preset images
-- [ ] Deploy to production
-
-### Phase 2 (Week 1):
-- [ ] User authentication
-- [ ] Favorites persistence
-- [ ] Admin dashboard
-- [ ] Analytics
-
-### Phase 3 (Month 1):
-- [ ] Custom fonts for verses
-- [ ] More sharing options
-- [ ] Email subscriptions
-- [ ] SEO optimization
-
-### Phase 4 (Future):
-- [ ] Mobile apps
-- [ ] Community features
-- [ ] Premium features
-- [ ] Multi-language support
-
-## Getting Help
-
-**Common Issues:**
-- Check SETUP.md for local development problems
-- Check DEPLOYMENT.md for production issues
-- Review backend logs in Railway dashboard
-- Check browser console for frontend errors
-
-**Need to customize something?**
-- Frontend styling: `frontend/src/index.css` & `tailwind.config.js`
-- API endpoints: `backend/src/routes/`
-- Database schema: `backend/prisma/schema.prisma`
-- Components: `frontend/src/components/`
-
----
-
-## 🎉 You're Ready!
-
-Your Anchor Bible app is complete and ready to:
-1. Run locally for development
-2. Deploy to production
-3. Share with the world
-
-Start with local setup, add some beautiful images, then deploy!
-
-**Happy building! ⚓️📖**
+- Read [SETUP.md](./SETUP.md) for the full setup guide with troubleshooting
+- Read [MIGRATION.md](./MIGRATION.md) for migration status and what's left to build
+- Read [README.md](./README.md) for project overview and architecture
